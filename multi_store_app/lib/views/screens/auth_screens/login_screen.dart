@@ -1,9 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:multi_store_app/controllers/auth_controller.dart';
 import 'package:multi_store_app/views/screens/auth_screens/register_screen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  late String email;
+
+  late String password;
+
+  final AuthController _authController = AuthController();
+
+  bool isLoading = false;
+
+  void loginUser() async {
+    setState(() {
+      isLoading = true;
+    });
+    await _authController
+        .signInUsers(
+      context: context,
+      email: email,
+      password: password,
+    )
+        .whenComplete(() {
+      setState(() {
+        isLoading = false;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +82,9 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
                   TextFormField(
+                    onChanged: (value) {
+                      email = value;
+                    },
                     validator: (value) {
                       if (value!.isEmpty) {
                         return 'enter your email';
@@ -93,6 +127,9 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
                   TextFormField(
+                    onChanged: (value) {
+                      password = value;
+                    },
                     validator: (value) {
                       if (value!.isEmpty) {
                         return 'enter your email';
@@ -131,7 +168,7 @@ class LoginScreen extends StatelessWidget {
                   InkWell(
                     onTap: () {
                       if (_formKey.currentState!.validate()) {
-                        print('okk');
+                        loginUser();
                       }
                     },
                     child: Container(
@@ -213,13 +250,17 @@ class LoginScreen extends StatelessWidget {
                             ),
                           ),
                           Center(
-                            child: Text(
-                              'Sign in',
-                              style: GoogleFonts.getFont('Lato',
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18),
-                            ),
+                            child: isLoading
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
+                                : Text(
+                                    'Sign in',
+                                    style: GoogleFonts.getFont('Lato',
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18),
+                                  ),
                           ),
                         ],
                       ),
