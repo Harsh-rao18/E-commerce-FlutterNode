@@ -9,6 +9,7 @@ const categoryRouter = require('./routes/category')
 const subCategoryRouter = require('./routes/sub_category')
 const productRouter = require('./routes/product')
 const reviewRouter = require('./routes/product_review')
+const cors = require('cors')
 
 // Define the port number that server will listen on
 const PORT = 3000;
@@ -22,6 +23,7 @@ const DB = 'mongodb+srv://harshrao64644:harshrao@cluster0.tnms4fy.mongodb.net/?r
 
 // middleware - to register routes or to mount routes
 app.use(express.json());
+app.use(cors()); // enable cors for all routes and origin
 app.use(authRouter);
 app.use(bannerRouter);
 app.use(categoryRouter);
