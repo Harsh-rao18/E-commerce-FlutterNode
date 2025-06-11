@@ -1,4 +1,5 @@
 import 'package:app_web/controller/category_controller.dart';
+import 'package:app_web/views/widgets/category_widget.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
@@ -174,6 +175,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   color: Colors.grey,
                 ),
               ),
+              const CategoryWidget(),
             ],
           ),
         ),
