@@ -2,7 +2,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 
-// imprting the routers
+// importing the routers
 const authRouter = require('./routes/auth')
 const bannerRouter = require('./routes/banner')
 const categoryRouter = require('./routes/category')

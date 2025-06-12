@@ -14,6 +14,17 @@ subCategoryRouter.post('/api/subcategories', async (req, res) => {
     }
 });
 
+// get all subcategories
+subCategoryRouter.get('api/subcategories',async (req,res) => {
+    try {
+        const subcategories = await SubCategory.find();
+        return res.status(200).json(subcategories);
+    } catch (error) {
+        res.status(500).json({error:error.message})
+    }
+
+})
+
 // Get subcategories by category name
 subCategoryRouter.get('/api/category/:categoryName/subcategories',async (req,res) => {
     try {

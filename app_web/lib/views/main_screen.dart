@@ -2,6 +2,7 @@ import 'package:app_web/views/sidebar_screens/buyers_screen.dart';
 import 'package:app_web/views/sidebar_screens/categories_screen.dart';
 import 'package:app_web/views/sidebar_screens/orders_screen.dart';
 import 'package:app_web/views/sidebar_screens/products_screen.dart';
+import 'package:app_web/views/sidebar_screens/subcategory_screen.dart';
 import 'package:app_web/views/sidebar_screens/upload_banner_screen.dart';
 import 'package:app_web/views/sidebar_screens/vendors_screen.dart';
 import 'package:flutter/cupertino.dart';
@@ -32,6 +33,11 @@ class _MainScreenState extends State<MainScreen> {
       case CategoriesScreen.id:
         setState(() {
           _selectedScreen = const CategoriesScreen();
+        });
+        break;
+      case SubcategoryScreen.id:
+        setState(() {
+          _selectedScreen = const SubcategoryScreen();
         });
         break;
       case OrdersScreen.id:
@@ -99,6 +105,11 @@ class _MainScreenState extends State<MainScreen> {
           AdminMenuItem(
             title: 'Categories',
             route: CategoriesScreen.id,
+            icon: Icons.category,
+          ),
+          AdminMenuItem(
+            title: 'Subcategories',
+            route: SubcategoryScreen.id,
             icon: Icons.category,
           ),
           AdminMenuItem(
