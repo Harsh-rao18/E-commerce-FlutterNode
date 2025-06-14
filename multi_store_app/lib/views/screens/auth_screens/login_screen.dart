@@ -4,6 +4,8 @@ import 'package:multi_store_app/controllers/auth_controller.dart';
 import 'package:multi_store_app/views/screens/auth_screens/register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }

@@ -6,6 +6,8 @@ import 'package:multi_store_app/views/screens/nav_screens/screens/mart_screen.da
 import 'package:multi_store_app/views/screens/nav_screens/screens/profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
@@ -13,11 +15,11 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _pageIndex = 0;
   final List<Widget> _pages = [
-    HomeScreen(),
-    FavouriteScreen(),
-    MartScreen(),
-    CartScreen(),
-    ProfileScreen(),
+    const HomeScreen(),
+    const FavouriteScreen(),
+    const MartScreen(),
+    const CartScreen(),
+    const ProfileScreen(),
   ];  
 
   @override
