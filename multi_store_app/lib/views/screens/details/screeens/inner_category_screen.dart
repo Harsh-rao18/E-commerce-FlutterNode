@@ -1,40 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:multi_store_app/models/category.dart';
+import 'package:multi_store_app/views/screens/details/widget/inner_category_content_widget.dart';
 import 'package:multi_store_app/views/screens/nav_screens/screens/cart_screen.dart';
 import 'package:multi_store_app/views/screens/nav_screens/screens/category_screen.dart';
 import 'package:multi_store_app/views/screens/nav_screens/screens/favourite_screen.dart';
-import 'package:multi_store_app/views/screens/nav_screens/screens/home_screen.dart';
 import 'package:multi_store_app/views/screens/nav_screens/screens/mart_screen.dart';
 import 'package:multi_store_app/views/screens/nav_screens/screens/profile_screen.dart';
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+class InnerCategoryScreen extends StatefulWidget {
+  final Category category;
+
+  const InnerCategoryScreen({super.key, required this.category});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<InnerCategoryScreen> createState() => _InnerCategoryScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
-  int _pageIndex = 0;
-  final List<Widget> _pages = [
-    const HomeScreen(),
+class _InnerCategoryScreenState extends State<InnerCategoryScreen> {
+
+  int pageIndex = 0;
+  @override
+  Widget build(BuildContext context) {
+  final List<Widget> pages = [
+    InnerCategoryContentWidget(category: widget.category),
     const FavouriteScreen(),
     const CategoryScreen(),
     const MartScreen(),
     const CartScreen(),
     const ProfileScreen(),
   ];  
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        currentIndex: _pageIndex,
+        currentIndex: pageIndex,
         selectedItemColor: const Color.fromARGB(255, 43, 4, 171),
         unselectedItemColor: Colors.grey,
         onTap: (value) {
           setState(() {
-            _pageIndex = value;
+            pageIndex = value;
           });
         },
         items: [
@@ -74,7 +77,7 @@ class _MainScreenState extends State<MainScreen> {
               label: "Account"),
         ],
       ),
-      body: _pages[_pageIndex],
+      body: pages[pageIndex],
     );
   }
 }

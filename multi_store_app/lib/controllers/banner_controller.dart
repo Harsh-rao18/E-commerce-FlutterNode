@@ -16,12 +16,8 @@ class BannerController {
       },
     );
 
-    print('Status Code: ${response.statusCode}');
-    print('Response Body: ${response.body}');
-
     if (response.statusCode == 200) {
       List<dynamic> data = jsonDecode(response.body);
-      print('Decoded Data: $data');
 
       List<BannerModel> banners =
           data.map((banner) => BannerModel.fromJson(banner)).toList();
@@ -31,7 +27,6 @@ class BannerController {
       throw Exception('Failed to load banners: ${response.statusCode}');
     }
   } catch (e) {
-    print('Error loading banners: $e');
     throw Exception('Error loading banners: $e');
   }
 }
