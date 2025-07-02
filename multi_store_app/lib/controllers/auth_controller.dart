@@ -1,12 +1,17 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multi_store_app/global_variable.dart';
 import 'package:multi_store_app/models/user.dart';
 import 'package:http/http.dart' as http;
+import 'package:multi_store_app/provider/user_provider.dart';
 import 'package:multi_store_app/services/manage_http_response.dart';
 import 'package:multi_store_app/views/screens/auth_screens/login_screen.dart';
 import 'package:multi_store_app/views/screens/main_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+final providerContainer = ProviderContainer();
 
 class AuthController {
   // SignUp User
@@ -41,7 +46,7 @@ class AuthController {
         context: context,
         onSuccess: () {
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => LoginScreen()));
+              context, MaterialPageRoute(builder: (context) => const LoginScreen()));
           showSnackBar(context, "Account has been created for you");
         },
       );
@@ -74,10 +79,30 @@ class AuthController {
       manageHttpResponse(
         response: response,
         context: context,
-        onSuccess: () {
+        onSuccess: () async {
+          // Access sharedPreferences for token and user data Storage
+          SharedPreferences preferences = await SharedPreferences.getInstance();
+
+          // Extract the unique auth token from the response body
+          String token = jsonDecode(response.body)['token'];
+
+          // Store the auth token Securly in shared prefernce
+          await preferences.setString('auth_token', token);
+
+          // Encode the user data receive from backend as json
+          final userJson = jsonEncode(jsonDecode(response.body)['user']);
+
+          // Update the apllication state with the user data using riverpod
+          providerContainer.read(userProvider.notifier).setUser(userJson);
+
+          // Store the data in sharedPreferences for future use
+
+          await preferences.setString("user", userJson);
+
+          // Navigate to main Screen
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => MainScreen()),
+            MaterialPageRoute(builder: (context) => const MainScreen()),
             (_) => false,
           );
           showSnackBar(context, "Logged In");

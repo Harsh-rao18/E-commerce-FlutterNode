@@ -51,7 +51,7 @@ authRouter.post('/api/signin',async(req,res)=>{
             const {password, ...userWithoutPassword} = existingEmail._doc;
 
             // send the response
-            res.json({token, ...userWithoutPassword});
+            res.json({token, user:userWithoutPassword});
          }
         }
     } catch (error) {

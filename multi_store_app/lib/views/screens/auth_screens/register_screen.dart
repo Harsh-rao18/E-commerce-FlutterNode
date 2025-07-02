@@ -82,8 +82,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     alignment: Alignment.topLeft,
                     child: Text(
                       'Email',
-                      style: GoogleFonts.getFont('Nunito Sans',
-                          fontWeight: FontWeight.w600, letterSpacing: 0.2),
+                      style: GoogleFonts.getFont(
+                        'Nunito Sans',
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                      ),
                     ),
                   ),
                   TextFormField(
@@ -324,7 +327,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => LoginScreen(),
+                          builder: (context) => const LoginScreen(),
                         ),
                       );
                     },

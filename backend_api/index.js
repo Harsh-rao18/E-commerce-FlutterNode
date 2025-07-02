@@ -9,6 +9,7 @@ const categoryRouter = require('./routes/category')
 const subCategoryRouter = require('./routes/sub_category')
 const productRouter = require('./routes/product')
 const reviewRouter = require('./routes/product_review')
+const vendorRouter = require('./routes/vendor')
 const cors = require('cors')
 
 // Define the port number that server will listen on
@@ -30,6 +31,7 @@ app.use(categoryRouter);
 app.use(subCategoryRouter);
 app.use(productRouter);
 app.use(reviewRouter);
+app.use(vendorRouter);
 
 
 // connectig to database
