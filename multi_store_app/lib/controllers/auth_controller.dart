@@ -45,8 +45,8 @@ class AuthController {
         response: response,
         context: context,
         onSuccess: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()));
           showSnackBar(context, "Account has been created for you");
         },
       );
@@ -110,6 +110,29 @@ class AuthController {
       );
     } catch (e) {
       print(e);
+    }
+  }
+
+  // SignOut
+  Future<void> signOutUser({required context}) async {
+    try {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      // clear the token and user from sharedprefernces
+      await preferences.remove('auth_token');
+      await preferences.remove('user');
+
+      // clear the user state
+      providerContainer.read(userProvider.notifier).signOut();
+
+      // navigate the user back to login-screen
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+        (route) => false,
+      );
+      showSnackBar(context, "signOut succesfully");
+    } catch (e) {
+      showSnackBar(context, " error signOut");
     }
   }
 }

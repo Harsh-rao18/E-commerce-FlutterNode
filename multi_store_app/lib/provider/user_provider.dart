@@ -17,7 +17,7 @@ class UserProvider extends StateNotifier<User?> {
               token: ''),
         );
 
-  // Getter Method to extracct values from an Object
+  // Getter Method to extract values from an Object
   User? get user => state;
 
   // Method to ser user state from Json
@@ -26,8 +26,13 @@ class UserProvider extends StateNotifier<User?> {
     state = User.fromJson(userJSon);
   }
 
+  // Method to clear user state
+  void signOut() {
+    state = null;
+  }
 }
-  // Make the data accessible within the  application
-  final userProvider = StateNotifierProvider<UserProvider, User?>(
-    (ref) => UserProvider(),
-  );
+
+// Make the data accessible within the  application
+final userProvider = StateNotifierProvider<UserProvider, User?>(
+  (ref) => UserProvider(),
+);
