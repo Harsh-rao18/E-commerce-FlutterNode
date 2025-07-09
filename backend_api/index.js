@@ -34,7 +34,7 @@ app.use(reviewRouter);
 app.use(vendorRouter);
 
 
-// connectig to database
+// connectig to database MongoDB
 mongoose.connect(DB).then(()=> {
     console.log('MongoDB Connected');  
 });
