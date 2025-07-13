@@ -27,7 +27,7 @@ const vendorschema = mongoose.Schema({
         type:String,
         default:"",
     },
-    loaclity:{
+    locality:{
         type:String,
         default:"",
     },
