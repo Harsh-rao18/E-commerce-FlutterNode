@@ -32,6 +32,15 @@ const productSchema = mongoose.Schema({
             required:true,
         }
     ],
+    vendorId:{
+        type:String,
+        required:true
+    },
+    fullName:{
+        type:String,
+        required:true
+    },
+
     popular:{
         type:Boolean,
         default:true,
