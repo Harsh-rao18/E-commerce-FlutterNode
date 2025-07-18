@@ -18,6 +18,7 @@ class UploadScreen extends ConsumerStatefulWidget {
 }
 
 class _UploadScreenState extends ConsumerState<UploadScreen> {
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final ProductController _productController = ProductController();
   final ImagePicker picker = ImagePicker();
@@ -45,19 +46,13 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
   Category? selectedCategory;
   Subcategory? selectedSubCategory;
 
+  bool isLoading = false;
+
+
   @override
   void initState() {
     super.initState();
     futureCategory = CategoryController().fetchCategories();
-  }
-
-  getSubCategoryByCategory(Category value) {
-    futureSubCategories = SubcategoryController().getSubcatgoryByCategoryName(
-      value.name,
-    );
-
-    // reset the selectedSubcategory
-    selectedCategory = null;
   }
 
   @override
@@ -129,6 +124,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
             SizedBox(
               width: 200,
               child: TextFormField(
+                keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value!.isEmpty) {
                     return "Enter product Price";
@@ -154,6 +150,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
             SizedBox(
               width: 200,
               child: TextFormField(
+                keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value!.isEmpty) {
                     return "Enter product Quantity";
@@ -189,17 +186,18 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                   return DropdownButton<Category>(
                     value: selectedCategory,
                     hint: const Text('Select Category'),
-                    items: snapshot.data!.map((Category cat) {
+                    items: snapshot.data!.map((Category category) {
                       return DropdownMenuItem(
-                        value: cat,
-                        child: Text(cat.name),
+                        value: category,
+                        child: Text(category.name),
                       );
                     }).toList(),
                     onChanged: (value) {
                       setState(() {
                         selectedCategory = value;
-                        selectedSubCategory = null; // Reset subcategory
-                        getSubCategoryByCategory(value!);
+                        selectedSubCategory = null;
+                        futureSubCategories = SubcategoryController()
+                            .getSubcatgoryByCategoryName(value!.name);
                       });
                     },
                   );
@@ -274,20 +272,53 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () async {
-                    final fullName = ref.read(vendorProvider)!.fullName;
-                    final vendorId = ref.read(vendorProvider)!.id;
-                    if (_formKey.currentState!.validate()) {
-                       _productController.uploadProduct(
+                    final vendor = ref.read(vendorProvider);
+
+                    if (vendor == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Vendor ID is required. Please log in again.',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    if (_formKey.currentState!.validate() &&
+                        selectedCategory != null &&
+                        selectedSubCategory != null) {
+
+                          setState(() {
+                            isLoading = true;
+                          });
+                      await _productController.uploadProduct(
                         productName: productName,
                         productPrice: productPrice,
                         quantity: quantity,
                         description: description,
                         category: selectedCategory!.name,
                         subCategory: selectedSubCategory!.subCategoryName,
-                        vendorId: vendorId,
-                        fullName: fullName,
+                        vendorId: vendor.id,
+                        fullName: vendor.fullName,
                         pickedImages: images,
                         context: context,
+                      ).whenComplete((){
+                        setState(() {
+                        isLoading = false;
+                      });
+                      selectedCategory = null;
+                      selectedSubCategory = null;
+                      images.clear();
+                      });
+                      
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Please fill all fields and selections',
+                          ),
+                        ),
                       );
                     }
                   },
@@ -303,7 +334,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text('Upload'),
+                  child: isLoading ? CircularProgressIndicator(color: Colors.white,) : Text('Upload'),
                 ),
               ),
             ),

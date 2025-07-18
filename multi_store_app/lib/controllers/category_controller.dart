@@ -24,7 +24,7 @@ Future<List<Category>> fetchCategories() async {
 
       return categories;
     } else {
-      throw Exception("Failed o get categories");
+      throw Exception("Failed to get categories");
     }
   } catch (e) {
     throw Exception("falied to get categories");

@@ -32,7 +32,7 @@ productRouter.get('/api/recommended-products',async (req,res) => {
         if (!product || product.length == 0) {
             return res.status(404).json({msg:"product not found"});
         } else {
-            return res.status(200).json({product});
+            return res.status(200).json(product);
         }
     } catch (error) {
         res.status(500).json({error:error.message}) 

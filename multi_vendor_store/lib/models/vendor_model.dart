@@ -38,7 +38,7 @@ class VendorModel {
 
   factory VendorModel.fromMap(Map<String, dynamic> map) {
     return VendorModel(
-      id: map['id'] as String? ?? '',
+      id: map['id'] ?? map['_id'] ?? '',
       fullName: map['fullName'] as String? ?? '',
       email: map['email'] as String? ?? '',
       city: map['city'] as String? ?? '',
@@ -50,13 +50,12 @@ class VendorModel {
   }
 
   factory VendorModel.fromJson(String source) {
-  final decoded = json.decode(source);
+    final decoded = json.decode(source);
 
-  if (decoded == null || decoded is! Map<String, dynamic>) {
-    throw Exception('Invalid or missing JSON for VendorModel');
+    if (decoded == null || decoded is! Map<String, dynamic>) {
+      throw Exception('Invalid or missing JSON for VendorModel');
+    }
+
+    return VendorModel.fromMap(decoded);
   }
-
-  return VendorModel.fromMap(decoded);
-}
-
 }
