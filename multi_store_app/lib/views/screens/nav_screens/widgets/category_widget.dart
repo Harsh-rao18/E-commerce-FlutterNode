@@ -14,6 +14,7 @@ class CategoryWidget extends StatefulWidget {
 
 class _CategoryWidgetState extends State<CategoryWidget> {
   late Future<List<Category>> futureCategory;
+
   @override
   void initState() {
     super.initState();
@@ -27,63 +28,72 @@ class _CategoryWidgetState extends State<CategoryWidget> {
       children: [
         const ReusableTextWidget(title: "Categories", subtitle: "view all"),
         FutureBuilder(
-            future: futureCategory,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
-              } else if (snapshot.hasError) {
-                return Center(
-                  child: Text('Error:${snapshot.error}'),
-                );
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(
-                  child: Text('No Categories'),
-                );
-              } else {
-                final categories = snapshot.data!;
-                return SizedBox(
-                  height: 400,
-                  child: GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 4,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                      ),
-                      itemCount: categories.length,
-                      itemBuilder: (context, index) {
-                        final category = categories[index];
-                        return InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => InnerCategoryScreen(
-                                  category: category,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Column(
-                            children: [
-                              Image.network(
-                                category.image,
-                                height: 60,
-                                width: 60,
-                              ),
-                              Text(
-                                category.name,
-                                style: GoogleFonts.quicksand(
-                                    fontWeight: FontWeight.bold, fontSize: 10),
-                              ),
-                            ],
+          future: futureCategory,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text('Error: ${snapshot.error}'),
+              );
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(
+                child: Text('No Categories'),
+              );
+            } else {
+              final categories = snapshot.data!;
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    return InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => InnerCategoryScreen(
+                              category: category,
+                            ),
                           ),
                         );
-                      }),
-                );
-              }
-            }),
+                      },
+                      child: Column(
+                        children: [
+                          Image.network(
+                            category.image,
+                            height: 60,
+                            width: 60,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.image_not_supported, size: 60),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            category.name,
+                            style: GoogleFonts.quicksand(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              );
+            }
+          },
+        ),
       ],
     );
   }

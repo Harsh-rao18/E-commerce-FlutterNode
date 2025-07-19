@@ -7,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   // Run the flutter app wrapped in a ProviderScope for managing state
-
   runApp(const ProviderScope(child: MyApp()));
 }
 

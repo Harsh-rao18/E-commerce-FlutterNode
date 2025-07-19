@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:multi_store_app/controllers/product_controller.dart';
 import 'package:multi_store_app/controllers/subcategory_controller.dart';
 import 'package:multi_store_app/models/category.dart';
+import 'package:multi_store_app/models/product_model.dart';
 import 'package:multi_store_app/models/subcategory_model.dart';
 import 'package:multi_store_app/views/screens/details/widget/inner_banner_widget.dart';
 import 'package:multi_store_app/views/screens/details/widget/inner_header_widget.dart';
 import 'package:multi_store_app/views/screens/details/widget/subcategory_tile_widget.dart';
+import 'package:multi_store_app/views/screens/nav_screens/widgets/product_item_widget.dart';
+import 'package:multi_store_app/views/screens/nav_screens/widgets/reusable_text_widget.dart';
 
 class InnerCategoryContentWidget extends StatefulWidget {
   final Category category;
@@ -19,12 +23,14 @@ class InnerCategoryContentWidget extends StatefulWidget {
 class _InnerCategoryContentWidgetState extends State<InnerCategoryContentWidget> {
   late Future<List<Subcategory>> _subcategories;
   final SubcategoryController _subcategoryController = SubcategoryController();
+  late Future<List<ProductModel>> futureProducts;
 
   @override
   void initState() {
     super.initState();
     _subcategories = _subcategoryController
         .getSubcatgoryByCategoryName(widget.category.name);
+    futureProducts = ProductController().fetchProductByCategory(widget.category.name);
   }
 
   @override
@@ -96,6 +102,32 @@ class _InnerCategoryContentWidgetState extends State<InnerCategoryContentWidget>
                     );
                   }
                 }),
+                const ReusableTextWidget(title: "Popular Products", subtitle: "view all"),
+                FutureBuilder(
+      future: futureProducts,
+      builder: (context,snapshot){
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator(),);
+        } else if(snapshot.hasError) {
+          return Center(child: Text("Error ${snapshot.error}"),);
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty){
+          return Text("No Products found");
+        } else {
+          final products = snapshot.data;
+          return SizedBox(
+            height: 250,
+            child: ListView.builder(
+              itemCount: products!.length,
+              shrinkWrap: true,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context,index){
+                final product = products[index];
+                return ProductItemWidget(product: product,);
+            }),
+          );
+        }
+      },
+    ),
           ],
         ),
       ),

@@ -17,6 +17,7 @@ class HomeScreen extends StatelessWidget {
             HeaderWidget(),
             BannerWidget(),
             CategoryWidget(),
+            SizedBox(height: 16),
             ReusableTextWidget(
               title: 'Popular Products',
               subtitle: 'view all',
