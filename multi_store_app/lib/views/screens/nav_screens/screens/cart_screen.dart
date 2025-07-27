@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:multi_store_app/provider/cart_provider.dart';
+import 'package:multi_store_app/views/screens/details/screeens/checkout_screen.dart';
+import 'package:multi_store_app/views/screens/main_screen.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -16,6 +18,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   Widget build(BuildContext context) {
     final cartData = ref.watch(cartProvider);
     final _cartProvider = ref.read(cartProvider.notifier);
+    final totalAmount = ref.read(cartProvider.notifier).calculateTotalamount();
     return Scaffold(
       appBar: PreferredSize(
           preferredSize:
@@ -91,7 +94,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     textAlign: TextAlign.center,
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> const MainScreen()));
+                    },
                     child: const Text('Shop Now'),
                   ),
                 ],
@@ -212,6 +217,66 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 ],
               ),
             ),
+    bottomNavigationBar: Container(
+      width: 416,
+      height: 89,
+      clipBehavior: Clip.hardEdge,
+      decoration: const BoxDecoration(),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Align(
+            alignment: Alignment.center,
+            child: Container(
+              width: 416,
+              height: 89,
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(
+                  color: const Color(0xFFC4C4C4)
+                )
+              ),
+            ),
+          ),
+          Align(
+            alignment: const Alignment(-0.63, -0.26),
+            child: Text("Subtotal",style: GoogleFonts.roboto(color: const Color(0xFFA1A1A1),fontSize: 16,fontWeight: FontWeight.bold),)
+          ),
+          Align(
+            alignment: const Alignment(-0.19,-0.31),
+            child: Text('\$${totalAmount.toString()}',style: GoogleFonts.roboto(color: const Color(0xFFA1A1A1),fontSize: 16,fontWeight: FontWeight.bold),)
+          ),
+          Align(
+            alignment: const Alignment(0.83,-1),
+            child: InkWell(
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> const CheckoutScreen()));
+              },
+              child: Container(
+                clipBehavior: Clip.hardEdge,
+                decoration:  BoxDecoration(
+                  color: totalAmount== 0.0 ? Colors.grey: const  Color(0xFF1532E7),
+                ),
+                height: 71,
+                width: 166,
+                child: Center(child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("CheckOut",style: GoogleFonts.roboto(color: Colors.white,fontSize: 16,fontWeight: FontWeight.bold),),
+                      const Icon(Icons.arrow_forward_ios,color: Colors.white,)
+                    ],
+                  ),
+                ),),
+
+              ),
+            )
+          ),
+        ],
+      ),
+    ),
     );
   }
 }
