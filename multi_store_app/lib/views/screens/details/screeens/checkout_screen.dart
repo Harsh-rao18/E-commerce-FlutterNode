@@ -1,8 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:multi_store_app/controllers/order_controller.dart';
 import 'package:multi_store_app/provider/cart_provider.dart';
+import 'package:multi_store_app/provider/user_provider.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -13,10 +14,11 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   String selectPaymentMethod = 'stripe';
+  final OrderController orderController = OrderController();
   @override
   Widget build(BuildContext context) {
     final cartData = ref.read(cartProvider);
-
+    final _cartProvider = ref.read(cartProvider.notifier);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Checkout'),
@@ -215,8 +217,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                       clipBehavior: Clip.hardEdge,
                                       decoration: const BoxDecoration(
                                           color: Color(0xFFBCC5FF)),
-                                      child:
-                                          Image.network(cartItem.image[index]),
+                                      child: Image.network(cartItem.image[0]),
                                     ),
                                     const SizedBox(
                                       width: 11,
@@ -321,20 +322,49 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-        width: 338,
-        height: 58,
-        decoration: BoxDecoration(
-          color: const Color(0xFF3854EE),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Center(
-          child: Text(
-            "Place Order",
-            style: GoogleFonts.montserrat(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+      bottomNavigationBar: InkWell(
+        onTap: () async {
+          if (selectPaymentMethod == 'stripe') {
+            // pay with stripe
+          } else {
+            await Future.forEach(_cartProvider.getCartItems.entries, (entry) {
+              var item = entry.value;
+              orderController.uploadOrders(
+                context: context,
+                id: '',
+                fullName: ref.read(userProvider)!.fullName,
+                email: ref.read(userProvider)!.email,
+                state: ref.read(userProvider)!.state,
+                city: ref.read(userProvider)!.city,
+                locality: ref.read(userProvider)!.locality,
+                productName: item.productName,
+                productPrice: item.productPrice,
+                quantity: item.quantity,
+                category: item.category,
+                image: item.image[0],
+                buyerId: ref.read(userProvider)!.id,
+                vendorId: item.vendorId,
+                processing: true,
+                delivered: false,
+              );
+            });
+          }
+        },
+        child: Container(
+          width: 338,
+          height: 58,
+          decoration: BoxDecoration(
+            color: const Color(0xFF3854EE),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Center(
+            child: Text(
+              "Place Order",
+              style: GoogleFonts.montserrat(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
