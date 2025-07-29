@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:multi_store_app/controllers/order_controller.dart';
 import 'package:multi_store_app/provider/cart_provider.dart';
 import 'package:multi_store_app/provider/user_provider.dart';
+import 'package:multi_store_app/views/screens/details/screeens/shipping_address_screen.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -19,6 +20,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Widget build(BuildContext context) {
     final cartData = ref.read(cartProvider);
     final _cartProvider = ref.read(cartProvider.notifier);
+    final user = ref.watch(userProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Checkout'),
@@ -33,7 +35,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context)=> const ShippingAddressScreen()));
+                },
                 child: SizedBox(
                   width: 335,
                   height: 74,
@@ -94,8 +98,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                       ),
                                       Align(
                                         alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          'United state',
+                                        child: user!.state.isNotEmpty ?Text(
+                                          user.state,
+                                          style: GoogleFonts.lato(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1.3,
+                                          ),
+                                        ): Text(
+                                          'State',
                                           style: GoogleFonts.lato(
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold,
@@ -105,7 +116,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                       ),
                                       Align(
                                         alignment: Alignment.centerLeft,
-                                        child: Text(
+                                        child: user.city.isNotEmpty?Text(
+                                          user.city,
+                                          style: GoogleFonts.lato(
+                                            color: const Color(0xFF7F808C),
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 12,
+                                          ),
+                                        ) :  Text(
                                           'Enter city',
                                           style: GoogleFonts.lato(
                                             color: const Color(0xFF7F808C),
@@ -322,48 +340,53 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: InkWell(
-        onTap: () async {
-          if (selectPaymentMethod == 'stripe') {
-            // pay with stripe
-          } else {
-            await Future.forEach(_cartProvider.getCartItems.entries, (entry) {
-              var item = entry.value;
-              orderController.uploadOrders(
-                context: context,
-                id: '',
-                fullName: ref.read(userProvider)!.fullName,
-                email: ref.read(userProvider)!.email,
-                state: ref.read(userProvider)!.state,
-                city: ref.read(userProvider)!.city,
-                locality: ref.read(userProvider)!.locality,
-                productName: item.productName,
-                productPrice: item.productPrice,
-                quantity: item.quantity,
-                category: item.category,
-                image: item.image[0],
-                buyerId: ref.read(userProvider)!.id,
-                vendorId: item.vendorId,
-                processing: true,
-                delivered: false,
-              );
-            });
-          }
-        },
-        child: Container(
-          width: 338,
-          height: 58,
-          decoration: BoxDecoration(
-            color: const Color(0xFF3854EE),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Center(
-            child: Text(
-              "Place Order",
-              style: GoogleFonts.montserrat(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: user.state.isEmpty ? TextButton(onPressed: (){
+          Navigator.push(context, MaterialPageRoute(builder: (context)=> const ShippingAddressScreen()));
+        }, child:  Text("Please enter Shipping Address",style: GoogleFonts.montserrat(fontWeight: FontWeight.bold,fontSize: 17),)) : InkWell(
+          onTap: () async {
+            if (selectPaymentMethod == 'stripe') {
+              // pay with stripe
+            } else {
+              await Future.forEach(_cartProvider.getCartItems.entries, (entry) {
+                var item = entry.value;
+                orderController.uploadOrders(
+                  context: context,
+                  id: '',
+                  fullName: ref.read(userProvider)!.fullName,
+                  email: ref.read(userProvider)!.email,
+                  state: ref.read(userProvider)!.state,
+                  city: ref.read(userProvider)!.city,
+                  locality: ref.read(userProvider)!.locality,
+                  productName: item.productName,
+                  productPrice: item.productPrice,
+                  quantity: item.quantity,
+                  category: item.category,
+                  image: item.image[0],
+                  buyerId: ref.read(userProvider)!.id,
+                  vendorId: item.vendorId,
+                  processing: true,
+                  delivered: false,
+                );
+              });
+            }
+          },
+          child: Container(
+            width: 338,
+            height: 58,
+            decoration: BoxDecoration(
+              color: const Color(0xFF3854EE),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Center(
+              child: Text(
+                "Place Order",
+                style: GoogleFonts.montserrat(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),

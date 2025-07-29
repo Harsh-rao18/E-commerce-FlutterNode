@@ -135,4 +135,58 @@ class AuthController {
       showSnackBar(context, " error signOut");
     }
   }
+
+  // Update user city , locality and state
+  Future<void> updateUser({
+    required context,
+    required String id,
+    required String state,
+    required String city,
+    required String locality,
+  }) async {
+    try {
+      // make a http put request
+      final http.Response response = await http.put(
+        Uri.parse("$uri/api/users/$id"),
+        //Encode the update data as Json Object
+        body: jsonEncode({
+          "state": state,
+          "city":city,
+          "locality":locality,
+        }),
+        headers: <String, String>{
+          //set the headers for the request
+          "Content-Type": "application/json; charset=UTF-8",
+        },
+      );
+
+      manageHttpResponse(
+          response: response,
+          context: context,
+          onSuccess: () async{
+            // Decode the updated user data from the response body
+            // this converts the json string response into dart map
+            final updatedUser =  jsonDecode(response.body);
+
+            // Access sharedPreference for local data storage
+            SharedPreferences preferences = await SharedPreferences.getInstance();
+
+            // Encode the update the user data as json String
+            // purpose : this prepares the data for storage in shared prefernces
+
+            final userJson = jsonEncode(updatedUser);
+            
+            // update the application state with the updated user data using Riverpod
+            // this ensures the app refelcts the most recent data
+            providerContainer.read(userProvider.notifier).setUser(userJson);
+
+            // store the updated user data in sharedpreference for future use
+            // this allows the app to retrive the user data even after the app restarts
+            await preferences.setString('user', userJson);
+
+          });
+    } catch (e) {
+      showSnackBar(context, "error updating location");
+    }
+  }
 }
