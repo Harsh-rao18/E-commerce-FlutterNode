@@ -16,7 +16,9 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
-    final _cartProvider = ref.read(cartProvider.notifier);
+    final cartProviderData = ref.read(cartProvider.notifier);
+    final cartData = ref.watch(cartProvider);
+    final isInCart = cartData.containsKey(widget.productModel.id);
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -146,8 +148,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
       bottomSheet: Padding(
         padding: const EdgeInsets.all(8),
         child: ElevatedButton(
-            onPressed: () {
-              _cartProvider.addProductToCart(
+            onPressed: isInCart? null : () {
+              cartProviderData.addProductToCart(
                 productName: widget.productModel.productName,
                 productPrice: widget.productModel.productPrice,
                 category: widget.productModel.category,
@@ -162,7 +164,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               showSnackBar(context, widget.productModel.productName);
             },
             style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3C55Ef),
+                backgroundColor: isInCart ? Colors.grey : const Color(0xFF3C55Ef),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 )),
