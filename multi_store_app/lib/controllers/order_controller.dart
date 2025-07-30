@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:multi_store_app/global_variable.dart';
 import 'package:multi_store_app/models/order_model.dart';
 import 'package:http/http.dart' as http;
@@ -60,5 +62,37 @@ class OrderController {
     }
   }
 
-  // Mrthods to get orders by Buyer Id
+  // Methods to GET orders by Buyer Id
+
+  Future<List<OrderModel>> fetchOrders({required String buyerId}) async {
+    try {
+     http.Response response = await http.get(
+        Uri.parse("$uri/api/orders/$buyerId"),
+        headers: <String, String>{
+        //set the headers for the request
+        "Content-Type":
+            "application/json; charset=UTF-8", // specify the context type as json
+      },
+      );
+
+      if (response.statusCode == 200) {
+        // Parse the Json response body to dynamic list
+        // This convert the json data into a format that can be further processed in dart
+        List<dynamic> data =  jsonDecode(response.body);
+
+        //Map the dynamic list to a list of orders object using the fromjson factory
+        // This converts the raw data to a list of the orders instances(objects) which are easier to work with
+        List<OrderModel> orders = data.map((order)=> OrderModel.fromJson(order)).toList();
+        return orders;
+      } else {
+        // throw an exception
+        throw Exception("Failed to load Orders");
+      } 
+
+      
+    } catch (e) {
+      throw Exception("Error loading Orders");
+    }
+  }
+  
 }
