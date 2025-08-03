@@ -120,6 +120,16 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   color: const Color(0xFF3C55Ef)),
             ),
           ),
+          widget.productModel.totalRatings == 0 ? const Text('') : Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Row(
+              children: [
+               const Icon(Icons.star,color: Colors.amber,),
+                Text(widget.productModel.averageRating.toString(),style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),),
+                Text('(${widget.productModel.totalRatings})')
+              ],
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(

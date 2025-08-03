@@ -54,7 +54,7 @@ class _EarningsScreenState extends ConsumerState<EarningsScreen> {
             ),
             const SizedBox(width: 10),
             SizedBox(
-              width: 200,
+              width: 300,
               child: Text(
                 "Welcome, ${vendor.fullName}!!",
                 style: GoogleFonts.montserrat(fontWeight: FontWeight.bold),
@@ -78,7 +78,7 @@ class _EarningsScreenState extends ConsumerState<EarningsScreen> {
               ),
               const SizedBox(height: 8,),
               Text(
-                "\$${totalEarnings['totalEarnings'].toStringAsFixed()}",
+                "\$${totalEarnings['totalEarnings'].toStringAsFixed(2)}",
                 style: GoogleFonts.montserrat(
                   fontSize: 36,
                   fontWeight: FontWeight.bold,

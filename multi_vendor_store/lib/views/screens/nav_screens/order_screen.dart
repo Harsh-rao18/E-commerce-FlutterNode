@@ -298,7 +298,7 @@ class _OrderScreenState extends ConsumerState<OrderScreen> {
                                           _deleteOrder(order.id);
                                         },
                                         child: Image.asset(
-                                          'asssets/icons/delete.png',
+                                          'assets/icons/delete.png',
                                           width: 20,
                                           height: 20,
                                         ),

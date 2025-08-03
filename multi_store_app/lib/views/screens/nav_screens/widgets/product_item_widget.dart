@@ -12,7 +12,11 @@ class ProductItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> ProductDetailScreen(productModel: product)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    ProductDetailScreen(productModel: product)));
       },
       child: Container(
         height: 170,
@@ -54,20 +58,29 @@ class ProductItemWidget extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(
-              height: 8,
-            ),
             Text(
               product.productName,
+              overflow: TextOverflow.ellipsis,
               style: GoogleFonts.roboto(
                   fontSize: 14,
                   color: const Color(0xFF212121),
                   fontWeight: FontWeight.bold),
-              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(
-              height: 4,
-            ),
+            product.averageRating == 0
+                ? const SizedBox()
+                : Row(
+                    children: [
+                     const  Icon(
+                        Icons.star,
+                        color: Colors.amber,
+                        size: 12,
+                      ),
+                      const SizedBox(
+                        width: 4,
+                      ),
+                      Text(product.averageRating.toStringAsFixed(1),style: GoogleFonts.montserrat(fontWeight: FontWeight.bold,fontSize: 12),)
+                    ],
+                  ),
             Text(
               product.category,
               style: GoogleFonts.quicksand(
@@ -82,7 +95,6 @@ class ProductItemWidget extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   color: const Color(0xff868D94)),
             ),
-
           ],
         ),
       ),

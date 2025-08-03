@@ -11,6 +11,8 @@ class ProductModel {
   final String vendorId;
   final String fullName;
   final List<String> images;
+  final double averageRating;
+  final int totalRatings;
 
   ProductModel({
     required this.id,
@@ -23,10 +25,12 @@ class ProductModel {
     required this.vendorId,
     required this.fullName,
     required this.images,
+    required this.averageRating,
+    required this.totalRatings,
   });
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
+    return {
       'id': id,
       'productName': productName,
       'productPrice': productPrice,
@@ -37,25 +41,29 @@ class ProductModel {
       'vendorId': vendorId,
       'fullName': fullName,
       'images': images,
+      'averageRating': averageRating,
+      'totalRatings': totalRatings,
     };
   }
 
   factory ProductModel.fromMap(Map<String, dynamic> map) {
     return ProductModel(
-      id: map['_id'] as String,
-      productName: map['productName'] as String,
-      productPrice: map['productPrice'] as int,
-      quantity: map['quantity'] as int,
-      description: map['description'] as String,
-      category: map['category'] as String,
-      subCategory: map['subCategory'] as String,
-      vendorId: map['vendorId'] as String,
-      fullName: map['fullName'] as String,
-      images: List<String>.from((map['images'] as List<dynamic>),
-    ));
+      id: map['_id'] ?? '',
+      productName: map['productName'] ?? '',
+      productPrice: map['productPrice']?.toInt() ?? 0,
+      quantity: map['quantity']?.toInt() ?? 0,
+      description: map['description'] ?? '',
+      category: map['category'] ?? '',
+      subCategory: map['subCategory'] ?? '',
+      vendorId: map['vendorId'] ?? '',
+      fullName: map['fullName'] ?? '',
+      images: List<String>.from(map['images']),
+      averageRating: map['averageRating']?.toDouble() ?? 0.0,
+      totalRatings: map['totalRatings']?.toInt() ?? 0,
+    );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory ProductModel.fromJson(String source) => ProductModel.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory ProductModel.fromJson(String source) => ProductModel.fromMap(json.decode(source));
 }
