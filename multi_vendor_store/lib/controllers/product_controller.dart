@@ -56,15 +56,22 @@ class ProductController {
             },
           );
 
-          manageHttpResponse(response: response, context: context, onSuccess: (){
-            showSnackBar(context, "Product Uploaded");
-          });
+          manageHttpResponse(
+            response: response,
+            context: context,
+            onSuccess: () {
+              showSnackBar(context, "Product Uploaded");
+            },
+          );
         } else {
           showSnackBar(context, "Selecr catagory and subCategory");
         }
       } else {
         showSnackBar(context, 'Select Image');
       }
-    } catch (e) {}
+    } catch (e) {
+      print("Upload Error: $e");
+      showSnackBar(context, "Something went wrong while uploading.");
+    }
   }
 }
