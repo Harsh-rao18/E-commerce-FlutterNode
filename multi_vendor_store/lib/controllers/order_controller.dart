@@ -4,17 +4,21 @@ import 'package:http/http.dart' as http;
 import 'package:multi_vendor_store/global_variables.dart';
 import 'package:multi_vendor_store/models/order_model.dart';
 import 'package:multi_vendor_store/services/manage_http_response.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OrderController {
   // Methods to GET orders by Vendor Id
   Future<List<OrderModel>> fetchOrders({required String vendorId}) async {
     try {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      String? token = preferences.getString('auth_token');
       http.Response response = await http.get(
         Uri.parse("$uri/api/orders/vendors/$vendorId"),
         headers: <String, String>{
           //set the headers for the request
           "Content-Type":
               "application/json; charset=UTF-8", // specify the context type as json
+           "x-auth-token":token!,
         },
       );
 

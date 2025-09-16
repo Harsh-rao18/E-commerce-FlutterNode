@@ -3,7 +3,10 @@ const Product = require('../models/product');
 
 const productRouter = express.Router();
 
-productRouter.post('/api/product',async (req,res) => {
+const {auth,vendorAuth} = require('../middleware/auth');
+
+
+productRouter.post('/api/product',auth,vendorAuth,async (req,res) => {
     try {
         const {productName,productPrice,quantity,description,category,subCategory,images,vendorId,fullName} =req.body;
         const product = new Product({productName,productPrice,quantity,description,category,subCategory,images,vendorId,fullName,});

@@ -4,6 +4,7 @@ import 'package:multi_store_app/global_variable.dart';
 import 'package:multi_store_app/models/order_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:multi_store_app/services/manage_http_response.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OrderController {
   // function to upload orders
@@ -26,6 +27,9 @@ class OrderController {
     required bool delivered,
   }) async {
     try {
+      SharedPreferences preference = await SharedPreferences.getInstance();
+      String? token = preference.getString('auth_token');
+
       final OrderModel order = OrderModel(
         id: id,
         fullName: fullName,
@@ -51,6 +55,7 @@ class OrderController {
           //set the headers for the request
           "Content-Type":
               "application/json; charset=UTF-8", // specify the context type as json
+          'x-auth-token': token!,
         },
       );
 
@@ -66,15 +71,18 @@ class OrderController {
   }
 
   // Methods to GET orders by Buyer Id
-
   Future<List<OrderModel>> fetchOrders({required String buyerId}) async {
     try {
+      SharedPreferences preference = await SharedPreferences.getInstance();
+      String? token = preference.getString('auth_token');
+
       http.Response response = await http.get(
         Uri.parse("$uri/api/orders/$buyerId"),
         headers: <String, String>{
           //set the headers for the request
           "Content-Type":
               "application/json; charset=UTF-8", // specify the context type as json
+          'x-auth-token': token!,
         },
       );
 
@@ -100,18 +108,25 @@ class OrderController {
   // Method to delete order by Id
   Future<void> deleteOrder({required String id, required context}) async {
     try {
-      http.Response response = await  http.delete(
+      SharedPreferences preference = await SharedPreferences.getInstance();
+      String? token = preference.getString('auth_token');
+
+      http.Response response = await http.delete(
         Uri.parse("$uri/api/orders/$id"),
         headers: <String, String>{
           //set the headers for the request
           "Content-Type":
               "application/json; charset=UTF-8", // specify the context type as json
+          'x-auth-token': token!,
         },
       );
 
-      manageHttpResponse(response: response, context: context, onSuccess: (){
-        showSnackBar(context, "Order Deleted Successfully");
-      });
+      manageHttpResponse(
+          response: response,
+          context: context,
+          onSuccess: () {
+            showSnackBar(context, "Order Deleted Successfully");
+          });
     } catch (e) {
       showSnackBar(context, "error");
     }

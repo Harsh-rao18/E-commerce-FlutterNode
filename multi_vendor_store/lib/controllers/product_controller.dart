@@ -5,6 +5,7 @@ import 'package:multi_vendor_store/global_variables.dart';
 import 'package:multi_vendor_store/models/product_model.dart';
 import 'package:multi_vendor_store/services/manage_http_response.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProductController {
   Future<void> uploadProduct({
@@ -20,6 +21,9 @@ class ProductController {
     required context,
   }) async {
     try {
+      SharedPreferences preferences = await SharedPreferences.getInstance();
+      String? token = preferences.getString('auth_token');
+
       if (pickedImages != null) {
         final cloudinary = CloudinaryPublic("dhocbxkhv", 'vgcavzfe');
         List<String> images = [];
@@ -53,6 +57,7 @@ class ProductController {
               //set the headers for the request
               "Content-Type":
                   "application/json; charset=UTF-8", // specify the context type as json
+              "x-auth-token":token!,
             },
           );
 
