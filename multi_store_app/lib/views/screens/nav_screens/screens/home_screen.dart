@@ -4,6 +4,7 @@ import 'package:multi_store_app/views/screens/nav_screens/widgets/category_widge
 import 'package:multi_store_app/views/screens/nav_screens/widgets/header_widget.dart';
 import 'package:multi_store_app/views/screens/nav_screens/widgets/popular_product_widget.dart';
 import 'package:multi_store_app/views/screens/nav_screens/widgets/reusable_text_widget.dart';
+import 'package:multi_store_app/views/screens/nav_screens/widgets/top_rated_product_widget.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -23,6 +24,8 @@ class HomeScreen extends StatelessWidget {
               subtitle: 'view all',
             ),
             PopularProductWidget(),
+            ReusableTextWidget(title: 'Top Rated Products', subtitle: ''),
+            TopRatedProductWidget(),
           ],
         ),
       ),
