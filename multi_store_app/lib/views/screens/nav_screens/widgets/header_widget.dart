@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:multi_store_app/views/screens/details/screeens/search_product_screen.dart';
 
 class HeaderWidget extends StatelessWidget {
   const HeaderWidget({super.key});
@@ -22,6 +23,14 @@ class HeaderWidget extends StatelessWidget {
               width: 250,
               height: 50,
               child: TextField(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SearchProductScreen(),
+                    ),
+                  );
+                },
                 decoration: InputDecoration(
                   hintText: 'Enter Text',
                   hintStyle: const TextStyle(
@@ -67,8 +76,8 @@ class HeaderWidget extends StatelessWidget {
                   width: 31,
                   height: 31,
                   decoration: const BoxDecoration(
-                    image: DecorationImage(image: AssetImage('assets/icons/message.png'))
-                  ),
+                      image: DecorationImage(
+                          image: AssetImage('assets/icons/message.png'))),
                 ),
               ),
             ),

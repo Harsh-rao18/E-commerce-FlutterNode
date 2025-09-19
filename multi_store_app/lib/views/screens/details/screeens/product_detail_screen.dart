@@ -5,6 +5,7 @@ import 'package:multi_store_app/controllers/product_controller.dart';
 import 'package:multi_store_app/models/product_model.dart';
 import 'package:multi_store_app/provider/cart_provider.dart';
 import 'package:multi_store_app/provider/related_product_provider.dart';
+import 'package:multi_store_app/provider/user_provider.dart';
 import 'package:multi_store_app/provider/wishlist_provider.dart';
 import 'package:multi_store_app/services/manage_http_response.dart';
 import 'package:multi_store_app/views/screens/nav_screens/widgets/product_item_widget.dart';
@@ -42,6 +43,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     final isInCart = cartData.containsKey(widget.productModel.id);
     final wishlistProviderData = ref.read(wishlistProvider.notifier);
     ref.watch(wishlistProvider);
+    final user = ref.read(userProvider)!.id;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -54,6 +56,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
           IconButton(
               onPressed: () {
                 wishlistProviderData.addProductToWishlist(
+                  userId: user,
                   productName: widget.productModel.productName,
                   productPrice: widget.productModel.productPrice,
                   category: widget.productModel.category,

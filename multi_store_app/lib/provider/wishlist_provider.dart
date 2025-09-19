@@ -1,45 +1,37 @@
 import 'dart:convert';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multi_store_app/models/wishlist_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WishlistProvider extends StateNotifier<Map<String, WishlistModel>> {
-  WishlistProvider() : super({}) {
-    _loadFavourite();
-  }
+  WishlistProvider() : super({});
 
-  // A private method that saves the current list of favourite items to sharedpreferences
-  Future<void> _saveFavourite() async {
-    // retrieving the sharedpreferences instance to store data
+  // 🔹 Save favourites for a specific user
+  Future<void> _saveFavourite(String userId) async {
     final prefs = await SharedPreferences.getInstance();
-    // encoding the current state(Map of favourite object) into json String
     final favouriteString = jsonEncode(state);
-    // saving the json string to sharedprefernces with the key "favourites"
-    await prefs.setString('favourites', favouriteString); 
+    await prefs.setString('favourites_$userId', favouriteString);
   }
 
-  // A private method that loads items from sharedprefernces
-  Future<void> _loadFavourite()async {
-    // retrieving the sharedpreferences instance to store data
+  // 🔹 Load favourites for a specific user
+  Future<void> loadFavourite(String userId) async {
     final prefs = await SharedPreferences.getInstance();
-    // fetch the json String of  the items from sharedprefernces under the key favourited
-    final favouriteString = prefs.getString('favourites');
-    // checking if the string is not null, meaning there is saved data to load
+    final favouriteString = prefs.getString('favourites_$userId');
+
     if (favouriteString != null) {
-      // decode the json string into a map of dynamic data
-      final Map<String,dynamic> favouriteMap =  jsonDecode(favouriteString);
-
-      // convert the dynamic map into a map of favourite objects using the 'fromjson' factory method
-      final favourites = favouriteMap.map((key,value)=> MapEntry(key, WishlistModel.fromJson(value)));
-
-      // updating the state with the loaded favourite
+      final Map<String, dynamic> favouriteMap = jsonDecode(favouriteString);
+      final favourites = favouriteMap.map(
+        (key, value) => MapEntry(key, WishlistModel.fromJson(value)),
+      );
       state = favourites;
+    } else {
+      state = {};
     }
   }
 
-
+  // 🔹 Add product to wishlist (per user)
   void addProductToWishlist({
+    required String userId,
     required String productName,
     required int productPrice,
     required String category,
@@ -63,20 +55,27 @@ class WishlistProvider extends StateNotifier<Map<String, WishlistModel>> {
       description: description,
       fullName: fullName,
     );
-  state = {...state};
-  _saveFavourite();
+    state = {...state};
+    _saveFavourite(userId);
   }
 
-  void removeWishlistItem(String productId){
+  // 🔹 Remove product from wishlist (per user)
+  void removeWishlistItem(String userId, String productId) {
     state.remove(productId);
-    // Notify the listener that the state has changed
-      state = {...state};
-      _saveFavourite();
+    state = {...state};
+    _saveFavourite(userId);
   }
 
-  Map<String,WishlistModel> get getWishlistedItems => state;
+  // 🔹 Clear wishlist for a specific user (on logout, if needed)
+  Future<void> clearWishList() async {
+    state = {};
+  }
+
+  // Getter
+  Map<String, WishlistModel> get getWishlistedItems => state;
 }
 
-final wishlistProvider = StateNotifierProvider<WishlistProvider,Map<String,WishlistModel>>((ref){
+final wishlistProvider =
+    StateNotifierProvider<WishlistProvider, Map<String, WishlistModel>>((ref) {
   return WishlistProvider();
 });

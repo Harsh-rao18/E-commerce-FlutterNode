@@ -1,56 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:multi_store_app/controllers/category_controller.dart';
 import 'package:multi_store_app/controllers/subcategory_controller.dart';
 import 'package:multi_store_app/models/category.dart';
-import 'package:multi_store_app/models/subcategory_model.dart';
+import 'package:multi_store_app/provider/category_provider.dart';
+import 'package:multi_store_app/provider/sub_category_provider.dart';
 import 'package:multi_store_app/views/screens/details/widget/subcategory_tile_widget.dart';
 import 'package:multi_store_app/views/screens/nav_screens/widgets/header_widget.dart';
 
-class CategoryScreen extends StatefulWidget {
+class CategoryScreen extends ConsumerStatefulWidget {
   const CategoryScreen({super.key});
 
   @override
-  State<CategoryScreen> createState() => _CategoryScreenState();
+  _CategoryScreenState createState() => _CategoryScreenState();
 }
 
-class _CategoryScreenState extends State<CategoryScreen> {
-  late Future<List<Category>> futureCategory;
+class _CategoryScreenState extends ConsumerState<CategoryScreen> {
   Category? _selectedCategory;
-  List<Subcategory> _subcategories = [];
-  final SubcategoryController _subcategoryController = SubcategoryController();
+
   @override
   void initState() {
     super.initState();
-    futureCategory = CategoryController().fetchCategories();
 
-    // once the categories are loaded process then
-    futureCategory.then((categories) {
-      // iterate through the categories to find the fashion category
-      for (var category in categories) {
-        if (category.name == "Fashion") {
-          // if Fashion category is found ,set it as teh selected category
-          setState(() {
-            _selectedCategory = category;
-          });
-          // load subacategories for the Fashion category
-          _loadSubcategories(category.name);
-        }
-      }
-    });
+    _fetchCategories();
   }
 
-  // this will load subcategories base on the categoryName
-  Future<void> _loadSubcategories(String categoryName) async {
+  Future<void> _fetchCategories() async {
+    final categories = await CategoryController().fetchCategories();
+    ref.read(categoryProvider.notifier).setCategories(categories);
+
+    // set the default selected category
+    for (var category in categories) {
+      if (category.name == "Fashion") {
+        setState(() {
+          _selectedCategory = category;
+        });
+
+        // load the subcategories for the default category
+        _fetchSubcategories(category.name);
+      }
+    }
+  }
+
+  Future<void> _fetchSubcategories(String categoryName) async {
     final subcategories =
-        await _subcategoryController.getSubcatgoryByCategoryName(categoryName);
-    setState(() {
-      _subcategories = subcategories;
-    });
+        await SubcategoryController().getSubcatgoryByCategoryName(categoryName);
+    ref.read(subCategoryProvider.notifier).setCategories(subcategories);
   }
 
   @override
   Widget build(BuildContext context) {
+    final categories = ref.watch(categoryProvider);
+    final subCategories = ref.watch(subCategoryProvider);
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(MediaQuery.of(context).size.height * 20),
@@ -64,47 +66,28 @@ class _CategoryScreenState extends State<CategoryScreen> {
             flex: 2,
             child: Container(
               color: Colors.grey.shade200,
-              child: FutureBuilder(
-                  future: futureCategory,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    } else if (snapshot.hasError) {
-                      return Center(
-                        child: Text("Error ${snapshot.error}"),
-                      );
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(
-                        child: Text('No Categories'),
-                      );
-                    } else {
-                      final categories = snapshot.data;
-                      return ListView.builder(
-                          itemCount: categories!.length,
-                          itemBuilder: (context, index) {
-                            final category = categories[index];
-                            return ListTile(
-                              onTap: () {
-                                setState(() {
-                                  _selectedCategory = category;
-                                });
-                                _loadSubcategories(category.name);
-                              },
-                              title: Text(
-                                category.name,
-                                style: GoogleFonts.quicksand(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: _selectedCategory == category
-                                      ? Colors.blue
-                                      : Colors.black,
-                                ),
-                              ),
-                            );
-                          });
-                    }
+              child: ListView.builder(
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    return ListTile(
+                      onTap: () {
+                        setState(() {
+                          _selectedCategory = category;
+                        });
+                        _fetchSubcategories(category.name);
+                      },
+                      title: Text(
+                        category.name,
+                        style: GoogleFonts.quicksand(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _selectedCategory == category
+                              ? Colors.blue
+                              : Colors.black,
+                        ),
+                      ),
+                    );
                   }),
             ),
           ),
@@ -141,11 +124,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           ),
 
                           // display subcategories
-                          _subcategories.isNotEmpty
+                          subCategories.isNotEmpty
                               ? GridView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
+                                  physics: const NeverScrollableScrollPhysics(),
                                   shrinkWrap: true,
-                                  itemCount: _subcategories.length,
+                                  itemCount: subCategories.length,
                                   gridDelegate:
                                       const SliverGridDelegateWithFixedCrossAxisCount(
                                           crossAxisCount: 3,
@@ -153,7 +136,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                                           mainAxisSpacing: 4,
                                           childAspectRatio: 2 / 3),
                                   itemBuilder: (context, index) {
-                                    final subcategory = _subcategories[index];
+                                    final subcategory = subCategories[index];
                                     return SubcategoryTileWidget(
                                       image: subcategory.image,
                                       title: subcategory.subCategoryName,

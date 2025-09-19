@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:multi_store_app/provider/user_provider.dart';
 import 'package:multi_store_app/provider/wishlist_provider.dart';
 import 'package:multi_store_app/views/screens/main_screen.dart';
 
@@ -16,6 +17,7 @@ class _FavouriteScreenState extends ConsumerState<FavouriteScreen> {
   Widget build(BuildContext context) {
     final wishItemData = ref.watch(wishlistProvider);
     final favouriteProvider = ref.read(wishlistProvider.notifier);
+    final user = ref.read(userProvider)!.id;
     return Scaffold(
       appBar: PreferredSize(
           preferredSize:
@@ -187,8 +189,8 @@ class _FavouriteScreenState extends ConsumerState<FavouriteScreen> {
                             top: 47,
                             child: InkWell(
                                 onTap: () {
-                                  favouriteProvider
-                                      .removeWishlistItem(wishData.productId);
+                                  favouriteProvider.removeWishlistItem(
+                                      wishData.productId, user);
                                 },
                                 child: Image.asset(
                                   'assets/icons/delete.png',

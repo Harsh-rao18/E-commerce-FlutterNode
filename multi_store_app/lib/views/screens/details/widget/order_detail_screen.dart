@@ -6,7 +6,6 @@ import 'package:multi_store_app/models/order_model.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final OrderModel order;
-
   const OrderDetailScreen({super.key, required this.order});
 
   @override
@@ -16,7 +15,7 @@ class OrderDetailScreen extends StatefulWidget {
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   final TextEditingController _reviewController = TextEditingController();
 
-  double rating = 0.0;
+  double rating = 3.0;
 
   final ProductReviewController _productReviewController =
       ProductReviewController();
@@ -189,7 +188,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             child: InkWell(
                               onTap: () {},
                               child: Image.asset(
-                                'asssets/icons/delete.png',
+                                'assets/icons/delete.png',
                                 width: 20,
                                 height: 20,
                               ),
@@ -207,7 +206,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             child: Container(
               width: 336,
-              height: widget.order.delivered == true ? 170 : 120,
+              height: widget.order.delivered == true ? 205 : 160,
               decoration: BoxDecoration(
                 color: Colors.white,
                 border: Border.all(color: const Color(0xFFEFF0F2)),
@@ -268,8 +267,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       RatingBar(
                                         filledIcon: Icons.star,
                                         emptyIcon: Icons.star_border,
-                                        onRatingChanged: (value){
-                                          value = rating;
+                                        onRatingChanged: (value) {
+                                          setState(() {
+                                            rating = value;
+                                          });
                                         },
                                         initialRating: 3,
                                         maxRating: 5,
@@ -282,10 +283,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                           final review = _reviewController.text;
                                           await _productReviewController
                                               .uploadReview(
-                                            buyerid: widget.order.buyerId,
+                                            buyerId: widget.order.buyerId,
                                             email: widget.order.email,
                                             fullName: widget.order.fullName,
-                                            productId: widget.order.id,
+                                            productId: widget.order.productId,
                                             rating: rating,
                                             review: review,
                                             context: context,

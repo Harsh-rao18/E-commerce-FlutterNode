@@ -2,7 +2,7 @@ import 'dart:convert';
 
 class ProductReviewModel {
   final String id;
-  final String buyerid;
+  final String buyerId;
   final String email;
   final String fullName;
   final String productId;
@@ -11,7 +11,7 @@ class ProductReviewModel {
 
   ProductReviewModel({
     required this.id,
-    required this.buyerid,
+    required this.buyerId,
     required this.email,
     required this.fullName,
     required this.productId,
@@ -23,7 +23,7 @@ class ProductReviewModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'buyerid': buyerid,
+      'buyerId': buyerId,
       'email': email,
       'fullName': fullName,
       'productId': productId,
@@ -35,7 +35,7 @@ class ProductReviewModel {
   factory ProductReviewModel.fromMap(Map<String, dynamic> map) {
     return ProductReviewModel(
       id: map['_id'] ?? '',
-      buyerid: map['buyerid'] ?? '',
+      buyerId: map['buyerId'] ?? '',
       email: map['email'] ?? '',
       fullName: map['fullName'] ?? '',
       productId: map['productId'] ?? '',

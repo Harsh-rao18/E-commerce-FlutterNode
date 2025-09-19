@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:multi_store_app/controllers/order_controller.dart';
 import 'package:multi_store_app/provider/cart_provider.dart';
 import 'package:multi_store_app/provider/user_provider.dart';
+import 'package:multi_store_app/services/manage_http_response.dart';
 import 'package:multi_store_app/views/screens/details/screeens/shipping_address_screen.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
@@ -361,6 +362,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 orderController.uploadOrders(
                   context: context,
                   id: '',
+                  productId: item.productId,
                   fullName: ref.read(userProvider)!.fullName,
                   email: ref.read(userProvider)!.email,
                   state: ref.read(userProvider)!.state,
@@ -376,6 +378,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   processing: true,
                   delivered: false,
                 );
+              }).then((value){
+                _cartProvider.clearCart();
+                showSnackBar(context, "Order successfully placed");
+                Navigator.pop(context);
               });
             }
           },

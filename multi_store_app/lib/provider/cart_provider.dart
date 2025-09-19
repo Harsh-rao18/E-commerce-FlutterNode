@@ -135,5 +135,13 @@ class CartNotifier extends StateNotifier<Map<String, CartModel>> {
     return totalAmount;
   }
 
+  // Method to clear all the cart items
+  void clearCart(){
+    state = {};
+    // Notify Listeners that state has changed
+    state = {...state};
+    _saveCartItems();
+  }
+
   Map<String, CartModel> get getCartItems => state;
 }

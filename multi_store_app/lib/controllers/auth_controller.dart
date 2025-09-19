@@ -5,13 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:multi_store_app/global_variable.dart';
 import 'package:multi_store_app/models/user.dart';
 import 'package:http/http.dart' as http;
+import 'package:multi_store_app/provider/deliver_order_count_provider.dart';
 import 'package:multi_store_app/provider/user_provider.dart';
+import 'package:multi_store_app/provider/wishlist_provider.dart';
 import 'package:multi_store_app/services/manage_http_response.dart';
 import 'package:multi_store_app/views/screens/auth_screens/login_screen.dart';
 import 'package:multi_store_app/views/screens/main_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-final providerContainer = ProviderContainer();
 
 class AuthController {
   // SignUp User
@@ -60,6 +60,7 @@ class AuthController {
     required context,
     required String email,
     required String password,
+    required WidgetRef ref,
   }) async {
     try {
       http.Response response = await http.post(
@@ -77,44 +78,54 @@ class AuthController {
         },
       );
       manageHttpResponse(
-        response: response,
-        context: context,
-        onSuccess: () async {
-          // Access sharedPreferences for token and user data Storage
-          SharedPreferences preferences = await SharedPreferences.getInstance();
+          response: response,
+          context: context,
+          onSuccess: () async {
+            // Access sharedPreferences for token and user data Storage
+            SharedPreferences preferences =
+                await SharedPreferences.getInstance();
 
-          // Extract the unique auth token from the response body
-          String token = jsonDecode(response.body)['token'];
+            // Extract the unique auth token from the response body
+            String token = jsonDecode(response.body)['token'];
 
-          // Store the auth token Securly in shared prefernce
-          await preferences.setString('auth_token', token);
+            // Store the auth token securely in shared preference
+            await preferences.setString('auth_token', token);
 
-          // Encode the user data receive from backend as json
-          final userJson = jsonEncode(jsonDecode(response.body)['user']);
+            // Extract user data from response
+            final userMap = jsonDecode(response.body)['user'];
 
-          // Update the apllication state with the user data using riverpod
-          providerContainer.read(userProvider.notifier).setUser(userJson);
+            // Encode user data
+            final userJson = jsonEncode(userMap);
 
-          // Store the data in sharedPreferences for future use
+            // Update Riverpod state
+            ref.read(userProvider.notifier).setUser(userJson);
 
-          await preferences.setString("user", userJson);
+            // Store in SharedPreferences
+            await preferences.setString("user", userJson);
 
-          // Navigate to main Screen
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const MainScreen()),
-            (_) => false,
-          );
-          showSnackBar(context, "Logged In");
-        },
-      );
+            // ✅ Use user ID from response directly
+            final userId = userMap['_id']; // or 'id' depending on backend field
+            await ref.read(wishlistProvider.notifier).loadFavourite(userId);
+
+            // Navigate to main screen
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const MainScreen()),
+              (_) => false,
+            );
+
+            showSnackBar(context, "Logged In");
+          });
     } catch (e) {
       print(e);
     }
   }
 
   // SignOut
-  Future<void> signOutUser({required context}) async {
+  Future<void> signOutUser({
+    required context,
+    required WidgetRef ref,
+  }) async {
     try {
       SharedPreferences preferences = await SharedPreferences.getInstance();
       // clear the token and user from sharedprefernces
@@ -122,12 +133,14 @@ class AuthController {
       await preferences.remove('user');
 
       // clear the user state
-      providerContainer.read(userProvider.notifier).signOut();
+      ref.read(userProvider.notifier).signOut();
+      ref.read(deliverOrderCountProvider.notifier).resetCount();
+      ref.read(wishlistProvider.notifier).clearWishList();
 
       // navigate the user back to login-screen
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
         (route) => false,
       );
       showSnackBar(context, "signOut succesfully");
@@ -143,6 +156,7 @@ class AuthController {
     required String state,
     required String city,
     required String locality,
+    required WidgetRef ref,
   }) async {
     try {
       // make a http put request
@@ -151,8 +165,8 @@ class AuthController {
         //Encode the update data as Json Object
         body: jsonEncode({
           "state": state,
-          "city":city,
-          "locality":locality,
+          "city": city,
+          "locality": locality,
         }),
         headers: <String, String>{
           //set the headers for the request
@@ -163,27 +177,27 @@ class AuthController {
       manageHttpResponse(
           response: response,
           context: context,
-          onSuccess: () async{
+          onSuccess: () async {
             // Decode the updated user data from the response body
             // this converts the json string response into dart map
-            final updatedUser =  jsonDecode(response.body);
+            final updatedUser = jsonDecode(response.body);
 
             // Access sharedPreference for local data storage
-            SharedPreferences preferences = await SharedPreferences.getInstance();
+            SharedPreferences preferences =
+                await SharedPreferences.getInstance();
 
             // Encode the update the user data as json String
             // purpose : this prepares the data for storage in shared prefernces
 
             final userJson = jsonEncode(updatedUser);
-            
+
             // update the application state with the updated user data using Riverpod
             // this ensures the app refelcts the most recent data
-            providerContainer.read(userProvider.notifier).setUser(userJson);
+            ref.read(userProvider.notifier).setUser(userJson);
 
             // store the updated user data in sharedpreference for future use
             // this allows the app to retrive the user data even after the app restarts
             await preferences.setString('user', userJson);
-
           });
     } catch (e) {
       showSnackBar(context, "error updating location");

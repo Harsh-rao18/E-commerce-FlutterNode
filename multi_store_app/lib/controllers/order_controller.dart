@@ -11,6 +11,7 @@ class OrderController {
   uploadOrders({
     required context,
     required String id,
+    required String productId,
     required String fullName,
     required String email,
     required String state,
@@ -32,6 +33,7 @@ class OrderController {
 
       final OrderModel order = OrderModel(
         id: id,
+        productId: productId,
         fullName: fullName,
         email: email,
         state: state,
@@ -96,6 +98,8 @@ class OrderController {
         List<OrderModel> orders =
             data.map((order) => OrderModel.fromJson(order)).toList();
         return orders;
+      } else if (response.statusCode == 404) {
+        return [];
       } else {
         // throw an exception
         throw Exception("Failed to load Orders");
@@ -129,6 +133,21 @@ class OrderController {
           });
     } catch (e) {
       showSnackBar(context, "error");
+    }
+  }
+
+  // Method to count delivered orders
+  Future<int> getDeliveredOrderedCount({required String buyerId}) async {
+    try {
+      // load all orders
+      List<OrderModel> orders = await fetchOrders(buyerId: buyerId);
+
+      // Filter only delivered orders
+      int count = orders.where((order) => order.delivered).length;
+
+      return count;
+    } catch (e) {
+      throw Exception("Error counting delivered Orders");
     }
   }
 }

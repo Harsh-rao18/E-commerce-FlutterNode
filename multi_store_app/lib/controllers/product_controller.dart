@@ -31,6 +31,8 @@ class ProductController {
             .toList();
 
         return products;
+      } else if (response.statusCode == 404) {
+        return [];
       } else {
         throw Exception("Failed to get products: ${response.statusCode}");
       }
@@ -61,6 +63,8 @@ class ProductController {
             .toList();
 
         return products;
+      } else if (response.statusCode == 404) {
+        return [];
       } else {
         throw Exception("Failed to get products: ${response.statusCode}");
       }
@@ -89,6 +93,8 @@ class ProductController {
             .toList();
 
         return products;
+      } else if (response.statusCode == 404) {
+        return [];
       } else {
         throw Exception("Failed to get products: ${response.statusCode}");
       }
@@ -116,6 +122,8 @@ class ProductController {
             .toList();
 
         return products;
+      } else if (response.statusCode == 404) {
+        return [];
       } else {
         throw Exception("Failed to get products: ${response.statusCode}");
       }
@@ -123,6 +131,31 @@ class ProductController {
       throw Exception("Failed to get products");
     }
   }
+  Future<List<ProductModel>> searchProducts(String query) async {
+    try {
+      http.Response response = await http.get(
+        Uri.parse("$uri/api/search-products?query=$query"),
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+        },
+      );
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        final List<dynamic> productsData = data['product'];
 
-  
+        List<ProductModel> products = productsData
+            .map((product) =>
+                ProductModel.fromMap(product as Map<String, dynamic>))
+            .toList();
+
+        return products;
+      } else if (response.statusCode == 404) {
+        return [];
+      } else {
+        throw Exception("Failed to get products: ${response.statusCode}");
+      }
+    } catch (e) {
+      throw Exception("Failed to get products");
+    }
+  }
 }

@@ -7,7 +7,7 @@ class ProductReviewController {
   // Method to upload review
 
   uploadReview({
-    required String buyerid,
+    required String buyerId,
     required String email,
     required String fullName,
     required String productId,
@@ -18,7 +18,7 @@ class ProductReviewController {
     try {
       ProductReviewModel productReviewModel = ProductReviewModel(
         id: '',
-        buyerid: buyerid,
+        buyerId: buyerId,
         email: email,
         fullName: fullName,
         productId: productId,

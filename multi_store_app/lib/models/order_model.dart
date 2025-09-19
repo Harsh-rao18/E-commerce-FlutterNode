@@ -3,6 +3,7 @@ import 'dart:convert';
 
 class OrderModel {
   final String id;
+  final String productId;
   final String fullName;
   final String email;
   final String state;
@@ -20,6 +21,7 @@ class OrderModel {
 
   OrderModel({
     required this.id,
+    required this.productId,
     required this.fullName,
     required this.email,
     required this.state,
@@ -39,6 +41,7 @@ class OrderModel {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
+      'productId':productId,
       'fullName': fullName,
       'email': email,
       'state': state,
@@ -59,6 +62,7 @@ class OrderModel {
   factory OrderModel.fromJson(Map<String, dynamic> map) {
     return OrderModel(
       id: map['_id'] as String,
+      productId: map['productId'] as String,
       fullName: map['fullName'] as String,
       email: map['email'] as String,
       state: map['state'] as String,

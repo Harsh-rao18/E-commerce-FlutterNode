@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:multi_store_app/models/product_model.dart';
 import 'package:multi_store_app/provider/cart_provider.dart';
+import 'package:multi_store_app/provider/user_provider.dart';
 import 'package:multi_store_app/provider/wishlist_provider.dart';
 import 'package:multi_store_app/services/manage_http_response.dart';
 import 'package:multi_store_app/views/screens/details/screeens/product_detail_screen.dart';
@@ -24,6 +25,7 @@ class _ProductItemWidgetState extends ConsumerState<ProductItemWidget> {
     final cartProviderData = ref.read(cartProvider.notifier);
     final cartData = ref.watch(cartProvider);
     final isInCart = cartData.containsKey(widget.product.id);
+    final user = ref.read(userProvider)!.id;
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -33,10 +35,11 @@ class _ProductItemWidgetState extends ConsumerState<ProductItemWidget> {
                     ProductDetailScreen(productModel: widget.product)));
       },
       child: Container(
-        height: 170,
+        height: 260,
         margin: const EdgeInsets.symmetric(horizontal: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               height: 170,
@@ -51,12 +54,14 @@ class _ProductItemWidgetState extends ConsumerState<ProductItemWidget> {
                     width: 170,
                     fit: BoxFit.cover,
                   ),
+                  const SizedBox(height: 4),
                   Positioned(
                     top: 15,
                     right: 2,
                     child: InkWell(
                         onTap: () {
                           wishlistProviderData.addProductToWishlist(
+                            userId: user,
                             productName: widget.product.productName,
                             productPrice: widget.product.productPrice,
                             category: widget.product.category,

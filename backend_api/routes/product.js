@@ -75,6 +75,23 @@ productRouter.get("/api/products-by-category/:category", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+// new route for retrieving products by subcategory
+productRouter.get(
+  "/api/products-by-subcategory/:subCategory",
+  async (req, res) => {
+    try {
+      const { subCategory } = req.params;
+      const products = await Product.find({ subCategory: subCategory });
+      if (!products || products.length == 0) {
+        return res.status(404).json({ msg: "Product not found" });
+      } else {
+        return res.status(200).json({ products });
+      }
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
 
 // new route for retrieving related product by subcategory
 productRouter.get(
@@ -123,5 +140,68 @@ productRouter.get("/api/top-rated-products", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// Route for searching products by name or description
+productRouter.get("/api/search-products", async (req, res) => {
+  try {
+    const { query } = req.query;
+    // Validate the query parameter
+    // if missing a return 404 status with an error message
+    if (!query) {
+      return res.status(400).json({ msg: "Query parameter required" });
+    }
+
+    // Search the product collection for documents where either 'productName' or 'description'
+    // contains the specified query
+
+    const products = await Product.find({
+      $or: [
+        // Regex will match any productName containing the query String
+        { productName: { $regex: query, $options: "i" } },
+        { description: { $regex: query, $options: "i" } },
+      ],
+    });
+
+    if (!products || products.length == 0) {
+      return res.status(404).json({ msg: "Product not found" });
+    } else {
+      return res.status(200).json(products);
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Route to  edit an existing product
+productRouter.put(
+  "/api/edit-product/:productId",
+  auth,
+  vendorAuth,
+  async (req, res) => {
+    try {
+      const { productId } = req.params;
+
+      const product = await Product.findById(productId);
+
+      if (!product) {
+        return res.status(404).json({ msg: "Product Not Found" });
+      }
+
+      if (product.vendorId.toString() !== req.user.id) {
+        return res
+          .status(403)
+          .json({ msg: "Unauthorized to edit the product" });
+      }
+
+      const {vendorId,...updateData} = req.body; // exclude the vendorId
+
+      const updateProduct = await Product.findByIdAndUpdate(productId,{$set:updateData},{new:true});
+
+      return res.status(200).json(updateProduct);
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+);
 
 module.exports = productRouter;
