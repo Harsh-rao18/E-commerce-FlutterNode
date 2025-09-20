@@ -18,6 +18,9 @@ class OrderModel {
   final String vendorId;
   final bool processing;
   final bool delivered;
+  final String paymentStatus;
+  final String paymentIntentId;
+  final String paymentMethod;
 
   OrderModel({
     required this.id,
@@ -36,12 +39,15 @@ class OrderModel {
     required this.vendorId,
     required this.processing,
     required this.delivered,
+    required this.paymentStatus,
+    required this.paymentIntentId,
+    required this.paymentMethod,
   });
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
+    return {
       'id': id,
-      'productId':productId,
+      'productId': productId,
       'fullName': fullName,
       'email': email,
       'state': state,
@@ -56,27 +62,33 @@ class OrderModel {
       'vendorId': vendorId,
       'processing': processing,
       'delivered': delivered,
+      'paymentStatus': paymentStatus,
+      'paymentIntentId': paymentIntentId,
+      'paymentMethod': paymentMethod,
     };
   }
 
   factory OrderModel.fromJson(Map<String, dynamic> map) {
     return OrderModel(
-      id: map['_id'] as String,
-      productId: map['productId'] as String,
-      fullName: map['fullName'] as String,
-      email: map['email'] as String,
-      state: map['state'] as String,
-      city: map['city'] as String,
-      locality: map['locality'] as String,
-      productName: map['productName'] as String,
-      productPrice: map['productPrice'] as int,
-      quantity: map['quantity'] as int,
-      category: map['category'] as String,
-      image: map['image'] as String,
-      buyerId: map['buyerId'] as String,
-      vendorId: map['vendorId'] as String,
-      processing: map['processing'] as bool,
-      delivered: map['delivered'] as bool,
+      id: map['_id'] ?? '',
+      productId: map['productId'] ?? '',
+      fullName: map['fullName'] ?? '',
+      email: map['email'] ?? '',
+      state: map['state'] ?? '',
+      city: map['city'] ?? '',
+      locality: map['locality'] ?? '',
+      productName: map['productName'] ?? '',
+      productPrice: map['productPrice']?.toInt() ?? 0,
+      quantity: map['quantity']?.toInt() ?? 0,
+      category: map['category'] ?? '',
+      image: map['image'] ?? '',
+      buyerId: map['buyerId'] ?? '',
+      vendorId: map['vendorId'] ?? '',
+      processing: map['processing'] ?? false,
+      delivered: map['delivered'] ?? false,
+      paymentStatus: map['paymentStatus'] ?? '',
+      paymentIntentId: map['paymentIntentId'] ?? '',
+      paymentMethod: map['paymentMethod'] ?? '',
     );
   }
 

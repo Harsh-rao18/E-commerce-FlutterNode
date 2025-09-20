@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:multi_store_app/global_variable.dart';
 import 'package:multi_store_app/models/order_model.dart';
 import 'package:http/http.dart' as http;
@@ -26,6 +27,9 @@ class OrderController {
     required String vendorId,
     required bool processing,
     required bool delivered,
+    required String paymentStatus,
+    required String paymentIntentId,
+    required String paymentMethod,
   }) async {
     try {
       SharedPreferences preference = await SharedPreferences.getInstance();
@@ -48,6 +52,9 @@ class OrderController {
         vendorId: vendorId,
         processing: processing,
         delivered: delivered,
+        paymentStatus: paymentStatus,
+        paymentIntentId: paymentIntentId,
+        paymentMethod: paymentMethod
       );
 
       http.Response response = await http.post(
@@ -148,6 +155,66 @@ class OrderController {
       return count;
     } catch (e) {
       throw Exception("Error counting delivered Orders");
+    }
+  }
+
+  Future<Map<String, dynamic>> createpayment({
+    required int amount,
+    required String currency,
+  }) async {
+    try {
+      SharedPreferences preference = await SharedPreferences.getInstance();
+      String? token = preference.getString('auth_token');
+
+      http.Response response =
+          await http.post(Uri.parse("$uri/api/payment-intent"),
+              headers: <String, String>{
+                //set the headers for the request
+                "Content-Type":
+                    "application/json; charset=UTF-8", // specify the context type as json
+                'x-auth-token': token!,
+              },
+              body: jsonEncode({
+                'amount': amount,
+                'currency': currency,
+              }));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception("Failed to create payment");
+      }
+    } catch (e) {
+      throw Exception("Error Occured");
+    }
+  }
+
+  // Retrieve payment to know if payment was successful
+  Future<Map<String, dynamic>> getPaymentIntentStatus({
+    required BuildContext context,
+    required String paymentIntentId,
+  }) async {
+    try {
+      SharedPreferences preference = await SharedPreferences.getInstance();
+      String? token = preference.getString('auth_token');
+
+      http.Response response = await http.get(
+        Uri.parse("$uri/api/payment-intent/$paymentIntentId"),
+        headers: <String, String>{
+          //set the headers for the request
+          "Content-Type":
+              "application/json; charset=UTF-8", // specify the context type as json
+          'x-auth-token': token!,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception("Failed to create payment");
+      }
+    } catch (e) {
+       throw Exception("Error Occured");
     }
   }
 }

@@ -25,6 +25,9 @@ orderRouter.post("/api/orders", auth, async (req, res) => {
       image,
       buyerId,
       vendorId,
+      paymentStatus,
+      paymentIntentId,
+      paymentMethod,
     } = req.body;
 
     const createdAt = new Date().getMilliseconds(); // Get the current date
@@ -44,6 +47,9 @@ orderRouter.post("/api/orders", auth, async (req, res) => {
       image,
       buyerId,
       vendorId,
+      paymentStatus,
+      paymentIntentId,
+      paymentMethod,
       createdAt,
     });
     await order.save();
@@ -157,18 +163,27 @@ orderRouter.get("/api/orders", async (req, res) => {
 });
 
 // payment api
-orderRouter.post("/api/payment-intent", async (req, res) => {
+orderRouter.post("/api/payment-intent",auth, async (req, res) => {
   try {
-    const { amount,currency} = req.body;
+    const { amount, currency } = req.body;
 
     // Now create the paymnet Intent with the correct amount
     const paymentIntent = await stripe.paymentIntents.create({
-        amount,
-        currency,
+      amount,
+      currency,
     });
     return res.status(200).json(paymentIntent);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+orderRouter.get("/api/payment-intent/:id",auth, async (req, res) => {
+  try {
+    const paymentIntent = await stripe.paymentIntents.retrieve(req.params.id);
+    return res.status(200).json(paymentIntent);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 });
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:multi_store_app/controllers/order_controller.dart';
 import 'package:multi_store_app/provider/cart_provider.dart';
@@ -17,6 +18,86 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   String selectPaymentMethod = 'stripe';
   final OrderController orderController = OrderController();
+  bool isLoading = false;
+
+  Future<void> handlePayment(BuildContext context) async {
+    final cartData = ref.read(cartProvider);
+    final user = ref.read(userProvider);
+
+    if (cartData.isEmpty) {
+      showSnackBar(context, "Cart item is missing");
+      return;
+    }
+    if (user == null) {
+      showSnackBar(context, "USER INFO IS MISSING");
+      return;
+    }
+
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final totalAmount = cartData.values.fold(
+          0.0, (sum, item) => sum + (item.productQuantity * item.productPrice));
+      if (totalAmount <= 0) {
+        showSnackBar(context, "Total amount must be greater than zero");
+        return;
+      }
+
+      final paymentIntent = await orderController.createpayment(
+          amount: (totalAmount * 100).toInt(), currency: 'usd');
+
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: paymentIntent['client_secret'],
+          merchantDisplayName: "Extra Planet",
+        ),
+      );
+
+      await Stripe.instance.presentPaymentSheet();
+
+      final paymentIntentStatus = await orderController.getPaymentIntentStatus(
+        context: context,
+        paymentIntentId: paymentIntent['id'],
+      );
+
+      if (paymentIntentStatus['status'] == 'succeeded') {
+        for (final entry in cartData.entries) {
+          final item = entry.value;
+
+          await orderController.uploadOrders(
+              context: context,
+              id: '',
+              productId: item.productId,
+              fullName: ref.read(userProvider)!.fullName,
+              email: ref.read(userProvider)!.email,
+              state: ref.read(userProvider)!.state,
+              city: ref.read(userProvider)!.city,
+              locality: ref.read(userProvider)!.locality,
+              productName: item.productName,
+              productPrice: item.productPrice,
+              quantity: item.quantity,
+              category: item.category,
+              image: item.image[0],
+              buyerId: ref.read(userProvider)!.id,
+              vendorId: item.vendorId,
+              processing: true,
+              delivered: false,
+              paymentStatus: paymentIntentStatus['status'],
+              paymentIntentId: paymentIntentStatus['id'],
+              paymentMethod: 'card');
+        }
+      }
+    } catch (e) {
+      showSnackBar(context, "payment failed $e");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cartData = ref.read(cartProvider);
@@ -37,7 +118,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             children: [
               InkWell(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> const ShippingAddressScreen()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ShippingAddressScreen()));
                 },
                 child: SizedBox(
                   width: 335,
@@ -80,25 +164,27 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                       Align(
+                                      Align(
                                         alignment: Alignment.centerLeft,
                                         child: SizedBox(
                                           width: 114,
-                                          child:user!.state.isNotEmpty ? const Text(
-                                            'Add Adress',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              height: 1.1,
-                                            ),
-                                          ) : const Text(
-                                            'Add Adress',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              height: 1.1,
-                                            ),
-                                          ),
+                                          child: user!.state.isNotEmpty
+                                              ? const Text(
+                                                  'Add Adress',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                    height: 1.1,
+                                                  ),
+                                                )
+                                              : const Text(
+                                                  'Add Adress',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                    height: 1.1,
+                                                  ),
+                                                ),
                                         ),
                                       ),
                                       const SizedBox(
@@ -106,39 +192,45 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                       ),
                                       Align(
                                         alignment: Alignment.centerLeft,
-                                        child: user.state.isNotEmpty ?Text(
-                                          user.state,
-                                          style: GoogleFonts.lato(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 1.3,
-                                          ),
-                                        ): Text(
-                                          'State',
-                                          style: GoogleFonts.lato(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 1.3,
-                                          ),
-                                        ),
+                                        child: user.state.isNotEmpty
+                                            ? Text(
+                                                user.state,
+                                                style: GoogleFonts.lato(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  letterSpacing: 1.3,
+                                                ),
+                                              )
+                                            : Text(
+                                                'State',
+                                                style: GoogleFonts.lato(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  letterSpacing: 1.3,
+                                                ),
+                                              ),
                                       ),
                                       Align(
                                         alignment: Alignment.centerLeft,
-                                        child: user.city.isNotEmpty?Text(
-                                          user.city,
-                                          style: GoogleFonts.lato(
-                                            color: const Color(0xFF7F808C),
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 12,
-                                          ),
-                                        ) :  Text(
-                                          'Enter city',
-                                          style: GoogleFonts.lato(
-                                            color: const Color(0xFF7F808C),
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 12,
-                                          ),
-                                        ),
+                                        child: user.city.isNotEmpty
+                                            ? Text(
+                                                user.city,
+                                                style: GoogleFonts.lato(
+                                                  color:
+                                                      const Color(0xFF7F808C),
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 12,
+                                                ),
+                                              )
+                                            : Text(
+                                                'Enter city',
+                                                style: GoogleFonts.lato(
+                                                  color:
+                                                      const Color(0xFF7F808C),
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
                                       )
                                     ],
                                   ),
@@ -350,60 +442,82 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: user.state.isEmpty ? TextButton(onPressed: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> const ShippingAddressScreen()));
-        }, child:  Text("Please enter Shipping Address",style: GoogleFonts.montserrat(fontWeight: FontWeight.bold,fontSize: 17),)) : InkWell(
-          onTap: () async {
-            if (selectPaymentMethod == 'stripe') {
-              // pay with stripe
-            } else {
-              await Future.forEach(_cartProvider.getCartItems.entries, (entry) {
-                var item = entry.value;
-                orderController.uploadOrders(
-                  context: context,
-                  id: '',
-                  productId: item.productId,
-                  fullName: ref.read(userProvider)!.fullName,
-                  email: ref.read(userProvider)!.email,
-                  state: ref.read(userProvider)!.state,
-                  city: ref.read(userProvider)!.city,
-                  locality: ref.read(userProvider)!.locality,
-                  productName: item.productName,
-                  productPrice: item.productPrice,
-                  quantity: item.quantity,
-                  category: item.category,
-                  image: item.image[0],
-                  buyerId: ref.read(userProvider)!.id,
-                  vendorId: item.vendorId,
-                  processing: true,
-                  delivered: false,
-                );
-              }).then((value){
-                _cartProvider.clearCart();
-                showSnackBar(context, "Order successfully placed");
-                Navigator.pop(context);
-              });
-            }
-          },
-          child: Container(
-            width: 338,
-            height: 58,
-            decoration: BoxDecoration(
-              color: const Color(0xFF3854EE),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Center(
-              child: Text(
-                "Place Order",
-                style: GoogleFonts.montserrat(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+        child: user.state.isEmpty
+            ? TextButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ShippingAddressScreen()));
+                },
+                child: Text(
+                  "Please enter Shipping Address",
+                  style: GoogleFonts.montserrat(
+                      fontWeight: FontWeight.bold, fontSize: 17),
+                ))
+            : InkWell(
+                onTap: () async {
+                  if (selectPaymentMethod == 'stripe') {
+                    // pay with stripe
+                    handlePayment(context);
+                  } else {
+                    await Future.forEach(_cartProvider.getCartItems.entries,
+                        (entry) {
+                      var item = entry.value;
+                      orderController.uploadOrders(
+                        context: context,
+                        id: '',
+                        productId: item.productId,
+                        fullName: ref.read(userProvider)!.fullName,
+                        email: ref.read(userProvider)!.email,
+                        state: ref.read(userProvider)!.state,
+                        city: ref.read(userProvider)!.city,
+                        locality: ref.read(userProvider)!.locality,
+                        productName: item.productName,
+                        productPrice: item.productPrice,
+                        quantity: item.quantity,
+                        category: item.category,
+                        image: item.image[0],
+                        buyerId: ref.read(userProvider)!.id,
+                        vendorId: item.vendorId,
+                        processing: true,
+                        delivered: false,
+                        paymentIntentId: 'cod',
+                        paymentStatus: 'pending',
+                        paymentMethod: 'cod',
+                      );
+                    }).then((value) {
+                      _cartProvider.clearCart();
+                      showSnackBar(context, "Order successfully placed");
+                      Navigator.pop(context);
+                    });
+                  }
+                },
+                child: Container(
+                  width: 338,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3854EE),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Center(
+                    child: isLoading
+                        ? const CircularProgressIndicator(
+                            color: Colors.white,
+                          )
+                        : Text(
+                            selectPaymentMethod == 'stripe'
+                                ? 'Pay Now'
+                                : "Place Order",
+                            style: GoogleFonts.montserrat(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ),
       ),
     );
   }
