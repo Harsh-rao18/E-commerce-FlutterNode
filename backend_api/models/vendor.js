@@ -44,7 +44,19 @@ const vendorschema = mongoose.Schema({
             },
             message:"Password must be 6 character long",
         } 
-    }
+    },
+    storeName:{
+        type:String,
+        default:"",
+    },
+    storeImage:{
+        type:String,
+        default:"",
+    },
+    storeDescription:{
+        type:String,
+       default:"",
+    },
 
 });
 

@@ -9,6 +9,7 @@ class VendorModel {
   final String locality;
   final String role;
   final String password;
+  final String token;
 
   VendorModel({
     required this.id,
@@ -19,6 +20,7 @@ class VendorModel {
     required this.locality,
     required this.role,
     required this.password,
+    required this.token,
   });
 
   Map<String, dynamic> toMap() {
@@ -46,6 +48,8 @@ class VendorModel {
       locality: map['locality'] as String? ?? '',
       role: map['role'] as String? ?? '',
       password: map['password'] as String? ?? '',
+      token: map['token'] as String? ?? '',
+
     );
   }
 

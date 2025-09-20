@@ -17,12 +17,10 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-
   final AuthController _authController = AuthController();
 
   @override
   Widget build(BuildContext context) {
-
     final user = ref.read(userProvider);
     final cartData = ref.read(cartProvider);
     final favoriteCount = ref.read(wishlistProvider);
@@ -348,21 +346,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               height: 10,
             ),
             ListTile(
-              onTap: () {},
-              leading: Image.asset(
-                'assets/icons/help.png',
-              ),
-              title: Text(
-                'Help',
-                style: GoogleFonts.montserrat(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            ListTile(
               onTap: () async {
                 await _authController.signOutUser(context: context, ref: ref);
               },
@@ -375,7 +358,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-            )
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            ListTile(
+              onTap: () async {
+                await _authController.deleteAccount(
+                  id: user.id,
+                  context: context,
+                  ref: ref,
+                );
+              },
+              leading: Image.asset(
+                'assets/icons/help.png',
+              ),
+              title: Text(
+                'Delete Account ',
+                style: GoogleFonts.montserrat(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ],
         ),
       ),

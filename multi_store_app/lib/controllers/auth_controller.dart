@@ -92,13 +92,13 @@ class AuthController {
             await preferences.setString('auth_token', token);
 
             // Extract user data from response
-            final userMap = jsonDecode(response.body)['user'];
+            final userMap = jsonDecode(response.body);
 
             // Encode user data
             final userJson = jsonEncode(userMap);
 
             // Update Riverpod state
-            ref.read(userProvider.notifier).setUser(userJson);
+            ref.read(userProvider.notifier).setUser(response.body);
 
             // Store in SharedPreferences
             await preferences.setString("user", userJson);
@@ -107,17 +107,19 @@ class AuthController {
             final userId = userMap['_id']; // or 'id' depending on backend field
             await ref.read(wishlistProvider.notifier).loadFavourite(userId);
 
-            // Navigate to main screen
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const MainScreen()),
-              (_) => false,
-            );
-
+            if (ref.read(userProvider)!.token.isNotEmpty) {
+              // Navigate to main screen
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const MainScreen()),
+                (_) => false,
+              );
             showSnackBar(context, "Logged In");
+            }
+
           });
     } catch (e) {
-      print(e);
+      showSnackBar(context, " error signIn");
     }
   }
 
@@ -201,6 +203,82 @@ class AuthController {
           });
     } catch (e) {
       showSnackBar(context, "error updating location");
+    }
+  }
+
+  Future<void> deleteAccount(
+      {required String id,
+      required BuildContext context,
+      required WidgetRef ref}) async {
+    try {
+      SharedPreferences preference = await SharedPreferences.getInstance();
+      String? token = preference.getString('auth_token');
+      if (token == null) {
+        showSnackBar(context, "You Need to login toperform this action");
+        return;
+      }
+      http.Response response = await http.delete(
+        Uri.parse('$uri/api/user/delete-account/$id'),
+        headers: <String, String>{
+          //set the headers for the request
+          "Content-Type":
+              "application/json; charset=UTF-8", // specify the context type as json
+          'x-auth-token': token,
+        },
+      );
+
+      manageHttpResponse(
+          response: response,
+          context: context,
+          onSuccess: () async {
+            await preference.remove('auth_token');
+            await preference.remove('user');
+
+            ref.read(userProvider.notifier).signOut();
+            showSnackBar(context, "Account Deleted Successfully");
+            Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false);
+          });
+    } catch (e) {
+      showSnackBar(context, "error deleting account");
+    }
+  }
+
+  getUserData(context, WidgetRef ref) async {
+    try {
+      SharedPreferences preference = await SharedPreferences.getInstance();
+      String? token = preference.getString('auth_token');
+      if (token == null) {
+        showSnackBar(context, "You Need to login toperform this action");
+        return;
+      }
+      http.Response tokenResponse = await http.post(
+        Uri.parse('$uri/tokenisvalid'),
+        headers: <String, String>{
+          //set the headers for the request
+          "Content-Type":
+              "application/json; charset=UTF-8", // specify the context type as json
+          'x-auth-token': token,
+        },
+      );
+
+      var response = jsonDecode(tokenResponse.body);
+      if (response == true) {
+        http.Response userResponse = await http.get(
+          Uri.parse('$uri/'),
+          headers: <String, String>{
+            //set the headers for the request
+            "Content-Type":
+                "application/json; charset=UTF-8", // specify the context type as json
+            'x-auth-token': token,
+          },
+        );
+        ref.read(userProvider.notifier).setUser(userResponse.body);
+      }
+    } catch (e) {
+      showSnackBar(context, e.toString());
     }
   }
 }

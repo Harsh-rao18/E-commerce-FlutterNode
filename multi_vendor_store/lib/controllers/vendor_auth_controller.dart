@@ -29,10 +29,11 @@ class VendorAuthController {
         locality: "",
         role: "",
         password: password,
+        token: "",
       );
 
       http.Response response = await http.post(
-        Uri.parse("$uri/api/vendor/signup"),
+        Uri.parse("$uri/api/v2/vendor/signup"),
         body: vendorModel.toJson(),
         headers: <String, String>{
           "Content-Type": 'application/json; charset=UTF-8',
@@ -55,10 +56,11 @@ class VendorAuthController {
     required context,
     required String email,
     required String password,
+    required WidgetRef ref,
   }) async {
     try {
       http.Response response = await http.post(
-        Uri.parse("$uri/api/vendor/signin"),
+        Uri.parse("$uri/api/v2/vendor/signin"),
         body: jsonEncode({"email": email, "password": password}),
         headers: <String, String>{
           "Content-Type": 'application/json; charset=UTF-8',
@@ -66,41 +68,81 @@ class VendorAuthController {
       );
 
       manageHttpResponse(
-  response: response,
-  context: context,
-  onSuccess: () async {
-    final decodedBody = jsonDecode(response.body);
+          response: response,
+          context: context,
+          onSuccess: () async {
+            // Access sharedPreferences for token and user data Storage
+            SharedPreferences preferences =
+                await SharedPreferences.getInstance();
 
-    print("🔍 Raw Response: ${response.body}");
-    print("✅ Decoded Body: $decodedBody");
+            // Extract the unique auth token from the response body
+            String token = jsonDecode(response.body)['token'];
 
-    final vendorData = decodedBody['user']; // 🔄 fixed key
-    final token = decodedBody['token'];
+            // Store the auth token securely in shared preference
+            await preferences.setString('auth_token', token);
 
-    if (vendorData == null || token == null) {
-      showSnackBar(context, "Invalid response from server.");
-      return;
-    }
+            // Extract user data from response
+            final userMap = jsonDecode(response.body);
 
-    final vendorJson = jsonEncode(vendorData);
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    preferences.setString('auth_token', token);
-    preferences.setString('vendor', vendorJson);
+            // Encode user data
+            final userJson = jsonEncode(userMap);
 
-    providerContainer.read(vendorProvider.notifier).setVendor(vendorJson);
+            // Update Riverpod state
+            ref.read(vendorProvider.notifier).setVendor(response.body);
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => MainVendorScreen()),
-      (route) => false,
-    );
+            // Store in SharedPreferences
+            await preferences.setString("user", userJson);
 
-    showSnackBar(context, "Vendor login successfully");
-  },
-);
+            if (ref.read(vendorProvider)!.token.isNotEmpty) {
+              // Navigate to main screen
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const MainVendorScreen()),
+                (_) => false,
+              );
+            showSnackBar(context, "Logged In");
+            }
+
+          });
 
     } catch (e) {
       showSnackBar(context, 'Error: $e');
+    }
+  }
+
+  getUserData(context, WidgetRef ref) async {
+    try {
+      SharedPreferences preference = await SharedPreferences.getInstance();
+      String? token = preference.getString('auth_token');
+      if (token == null) {
+        showSnackBar(context, "You Need to login toperform this action");
+        return;
+      }
+      http.Response tokenResponse = await http.post(
+        Uri.parse('$uri/vendor/tokenisvalid'),
+        headers: <String, String>{
+          //set the headers for the request
+          "Content-Type":
+              "application/json; charset=UTF-8", // specify the context type as json
+          'x-auth-token': token,
+        },
+      );
+
+      var response = jsonDecode(tokenResponse.body);
+      if (response == true) {
+        http.Response userResponse = await http.get(
+          Uri.parse('$uri/get-vendor'),
+          headers: <String, String>{
+            //set the headers for the request
+            "Content-Type":
+                "application/json; charset=UTF-8", // specify the context type as json
+            'x-auth-token': token,
+          },
+        );
+        ref.read(vendorProvider.notifier).setVendor(userResponse.body);
+      }
+    } catch (e) {
+      showSnackBar(context, e.toString());
     }
   }
 }

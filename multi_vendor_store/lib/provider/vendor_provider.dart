@@ -16,6 +16,7 @@ class VendorProvider extends StateNotifier<VendorModel?> {
           locality: '',
           role: '',
           password: '',
+          token: '',
         ),
       );
 
