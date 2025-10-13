@@ -55,7 +55,8 @@
 2. **Install Flutter dependencies:**
    ```bash
    flutter pub get
-2. **Run the app on an emulator or device:**
+3. **Run the app on an emulator or device:**
    ```bash
    flutter run
    
+
